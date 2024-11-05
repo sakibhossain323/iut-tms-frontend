@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { PiUserCircleThin } from "react-icons/pi";
+import LogoutButton from "./auth/logoutComponent";
 
 const Navbar = () => {
     return (
@@ -56,7 +57,7 @@ const Navbar = () => {
                                 <Link href="#">Profile</Link>
                             </li>
                             <li>
-                                <Link href="#">Logout</Link>
+                                <LogoutButton />
                             </li>
                         </ul>
                     </div>
