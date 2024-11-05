@@ -6,12 +6,19 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.JWT_SECRET });
     const { pathname } = req.nextUrl;
 
-    if (!token && pathname.startsWith("/dashboard")) {
-        return NextResponse.redirect(new URL("/auth/login", req.url));
+    const protectedPaths = ["/dashboard", "/profile", "/settings"];
+
+    const isProtectedRoute = protectedPaths.some((path) =>
+        pathname.startsWith(path)
+    );
+
+    if (isProtectedRoute && !token) {
+        return NextResponse.redirect(new URL("auth/login", req.url));
     }
+
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*"],
+    matcher: ["/((?!api|_next|public|auth).*)"], // Exclude non-page routes
 };

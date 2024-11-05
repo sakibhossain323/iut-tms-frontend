@@ -1,6 +1,5 @@
 "use client";
 import { signOut } from "next-auth/react";
-import { Children, ReactNode } from "react";
 
 const LogoutButton = () => {
     const handleSignOut = async () => {

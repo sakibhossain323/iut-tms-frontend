@@ -1,4 +1,4 @@
-// types/next-auth.d.ts
+// next-auth.d.ts
 import "next-auth";
 import { JWT } from "next-auth/jwt";
 

@@ -1,10 +1,14 @@
+"use client";
 import Link from "next/link";
-import { FaRegUserCircle } from "react-icons/fa";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { PiUserCircleThin } from "react-icons/pi";
-import LogoutButton from "./auth/logoutComponent";
+import LogoutButton from "./auth/logoutButton";
+import { useSession } from "next-auth/react";
 
 const Navbar = () => {
+    const { status, data: session } = useSession();
+    if (status === "unauthenticated") return null;
+
     return (
         <header className="container mx-auto w-4/5">
             <div className="navbar bg-base-100">
