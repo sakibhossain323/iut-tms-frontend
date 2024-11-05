@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { MdEmail } from "react-icons/md";
 import { FaBus } from "react-icons/fa";
+import Link from "next/link";
 
-const Login = () => {
+const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
@@ -54,7 +55,7 @@ const Login = () => {
                                     <MdEmail className="w-5 h-5 opacity-70" />
                                     <input
                                         type="email"
-                                        placeholder="your.email@iut-dhaka.edu"
+                                        placeholder="example@iut-dhaka.edu"
                                         className="grow"
                                         value={email}
                                         onChange={(e) =>
@@ -91,9 +92,11 @@ const Login = () => {
                                 </button>
                                 <div className="text-sm text-center text-base-content/70">
                                     Don't have an account?{" "}
-                                    <a href="#" className="link link-primary">
-                                        Register
-                                    </a>
+                                    <Link href="/auth/register">
+                                        <span className="text-primary cursor-pointer">
+                                            Register
+                                        </span>
+                                    </Link>
                                 </div>
                             </div>
                         </form>
@@ -104,4 +107,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default LoginPage;
