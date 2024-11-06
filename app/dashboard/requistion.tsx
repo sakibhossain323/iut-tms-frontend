@@ -1,21 +1,53 @@
 import { MdOutlinePendingActions } from "react-icons/md";
 import SingleRequisition from "./singleRequisition";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import Link from "next/link";
 
-const RequistionStatus = () => {
-    const requisitions = [
+export interface Requisition {
+    id: number;
+    user_id: number;
+    purpose: string;
+    destination: string;
+    date_required: string;
+    return_date: string;
+    number_of_passengers: number;
+    status: string;
+    contact_number: string;
+    vehicle_id: number | null;
+    driver_id: number | null;
+    hod_approval_date: string | null;
+    chairman_approval_date: string | null;
+    vc_approval_date: string | null;
+    rejection_reason: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+const RequistionStatus = async () => {
+    const session = await getServerSession(authOptions);
+    const res = await fetch(
+        process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "/requisitions",
         {
-            id: 1,
-            title: "Requisition Title",
-            time: "12:00 PM; 12 July, 2024 (Wednesdy)",
-            location: "Pick Up Location",
-        },
-        {
-            id: 2,
-            title: "Requisition Title",
-            time: "12:00 PM; 12 July, 2024 (Wednesdy)",
-            location: "Pick Up Location",
-        },
-    ];
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+        }
+    );
+
+    if (!res.ok) {
+        return <div>Failed to fetch data</div>;
+    }
+
+    const { requisitions, totalCount } = await res.json();
+
+    if (totalCount === 0) {
+        return <div>No requisitions found</div>;
+    }
+
     return (
         <div className="card lg:card-side bg-base-100 shadow-xl my-5">
             <div className="card-body">
@@ -27,17 +59,21 @@ const RequistionStatus = () => {
                         </h2>
                     </div>
                     <div className="card-actions my-3">
-                        <button className="btn btn-info">
-                            Request A Vehicle
-                        </button>
+                        <Link href="/requisition/new">
+                            <button className="btn btn-info">
+                                Request A Vehicle
+                            </button>
+                        </Link>
                     </div>
                 </div>
-                {requisitions.map((requisition) => (
+                {requisitions.map((requisition: Requisition) => (
                     <SingleRequisition
-                        key={requisition.id}
-                        title={requisition.title}
-                        time={requisition.time}
-                        location={requisition.location}
+                        key={requisition?.id}
+                        title={requisition?.purpose}
+                        time={new Date(
+                            requisition?.date_required
+                        ).toLocaleString()}
+                        location={requisition?.destination}
                     />
                 ))}
             </div>
