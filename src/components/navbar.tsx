@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { PiUserCircleThin } from "react-icons/pi";
-import LogoutButton from "./auth/logoutButton";
+import LogoutButton from "@/components/logoutButton";
 import { useSession } from "next-auth/react";
 
 const Navbar = () => {
