@@ -10,7 +10,7 @@ export default function Navbar() {
                 className="flex items-end justify-start bg-primary rounded-md mb-2 p-4 h-20 lg:h-32"
                 href="/"
             >
-                <h1 className="text-2xl font-medium text-white">IUT TMS</h1>
+                <h1 className="text-3xl font-medium text-white">IUT TMS</h1>
             </Link>
             <div className="flex grow flex-row justify-between space-x-2 lg:flex-col lg:space-x-0 lg:space-y-2">
                 <NavLinks />
@@ -33,8 +33,7 @@ export default function Navbar() {
                 <form>
                     <LogoutButton
                         className="flex h-12 w-full grow items-center justify-center gap-2 
-                rounded-md p-3 text-sm font-medium lg:justify-start lg:p-2 lg:px-3 hover:bg-primary
-                hover:text-white"
+                rounded-md p-3 text-lg font-medium lg:justify-start lg:p-2 lg:px-3 hover:bg-sky-100 hover:text-blue-600"
                     >
                         <HiOutlinePower size={20} />
                         <div>Log Out</div>

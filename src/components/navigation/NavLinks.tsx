@@ -3,18 +3,19 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HiOutlineClipboardDocumentList } from "react-icons/hi2";
+import { BiBookAdd } from "react-icons/bi";
+import { LuListTodo } from "react-icons/lu";
 
 const links = [
     {
-        name: "Dashboard",
+        name: "Overview",
         path: "/dashboard",
-        icon: HiOutlineClipboardDocumentList,
+        icon: LuListTodo,
     },
     {
         name: "Requisitions",
         path: "/requisitions",
-        icon: HiOutlineClipboardDocumentList,
+        icon: BiBookAdd,
     },
 ];
 
@@ -29,14 +30,15 @@ export default function NavLinks() {
                         key={link.name}
                         href={link.path}
                         className={clsx(
-                            "flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium " +
-                                "hover:text-primary lg:flex-none lg:justify-start lg:p-2 lg:px-3",
+                            "flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-lg font-medium " +
+                                "hover:bg-sky-100 hover:text-blue-600 lg:flex-none lg:justify-start lg:p-2 lg:px-3",
                             {
-                                "text-primary": pathname === link.path,
+                                "bg-sky-100 text-blue-600":
+                                    pathname === link.path,
                             }
                         )}
                     >
-                        <Icon className="w-6" />
+                        <Icon size={24} />
                         <span>{link.name}</span>
                     </Link>
                 );
