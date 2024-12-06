@@ -1,13 +1,9 @@
-import RequistionStatus from "./requistion";
-import Trips from "./trips";
-
-const UserDashboard = () => {
+export default function Page() {
     return (
-        <div className="my-5">
-            <RequistionStatus />
-            <Trips />
+        <div className="w-full p-2">
+            <div className="flex w-full items-center justify-between">
+                <h1 className="text-xl font-semibold">Overview</h1>
+            </div>
         </div>
     );
-};
-
-export default UserDashboard;
+}

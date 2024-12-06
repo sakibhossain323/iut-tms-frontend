@@ -2,6 +2,7 @@ import Link from "next/link";
 import NavLinks from "./NavLinks";
 import { HiOutlinePower } from "react-icons/hi2";
 import LogoutButton from "@/components/LogoutButton";
+import { IoPower } from "react-icons/io5";
 
 export default function Navbar() {
     return (
@@ -32,11 +33,11 @@ export default function Navbar() {
             </form> */}
                 <form>
                     <LogoutButton
-                        className="flex h-12 w-full grow items-center justify-center gap-2 
-                rounded-md p-3 text-lg font-medium lg:justify-start lg:p-2 lg:px-3 hover:bg-sky-100 hover:text-blue-600"
+                        className="flex h-12 w-full grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium
+                                    lg:justify-start lg:p-2 lg:px-3 hover:bg-sky-100 hover:text-blue-600"
                     >
-                        <HiOutlinePower size={20} />
-                        <div>Log Out</div>
+                        <IoPower size={20} />
+                        <div className="hidden lg:block">Log Out</div>
                     </LogoutButton>
                 </form>
             </div>
