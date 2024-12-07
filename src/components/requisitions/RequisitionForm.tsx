@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { AiOutlinePhone } from "react-icons/ai";
 import { BsFillPeopleFill } from "react-icons/bs";
-import { createRequisition } from "@/libs/actions";
+import { createRequisition } from "@/lib/actions";
 
 export default function RequisitionForm() {
     const [state, formAction] = useActionState(createRequisition, null);
@@ -122,7 +122,7 @@ export default function RequisitionForm() {
 
                     <button
                         type="submit"
-                        className="btn btn-primary w-full mt-4"
+                        className="bg-blue-600btn  w-full mt-4"
                     >
                         Submit Requisition
                     </button>

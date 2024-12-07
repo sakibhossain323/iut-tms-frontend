@@ -34,7 +34,7 @@ const LoginPage = () => {
                 <div className="card w-full max-w-md bg-base-100 shadow-xl">
                     <div className="card-body items-center text-center space-y-4">
                         {/* Header */}
-                        <FaBus className="h-12 w-12 text-primary" />
+                        <FaBus className="h-12 w-12 text-blue-600" />
                         <h2 className="card-title text-2xl font-bold">
                             IUT Transport Management
                         </h2>
@@ -86,14 +86,14 @@ const LoginPage = () => {
                             <div className="card-actions flex flex-col w-full gap-4 mt-4">
                                 <button
                                     type="submit"
-                                    className="btn btn-primary w-full"
+                                    className="bg-blue-600 w-full"
                                 >
                                     Login
                                 </button>
                                 <div className="text-sm text-center text-base-content/70">
                                     Don't have an account?{" "}
                                     <Link href="/auth/register">
-                                        <span className="text-primary cursor-pointer">
+                                        <span className="text-blue-600 cursor-pointer">
                                             Register
                                         </span>
                                     </Link>

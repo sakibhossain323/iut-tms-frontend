@@ -16,7 +16,7 @@ export default function Page() {
                 <Link
                     href="/dashboard/requisitions/new"
                     className="flex h-10 items-center rounded-lg px-4 gap-2 text-sm font-medium text-white
-                                bg-primary hover:bg-indigo-600"
+                                bg-blue-600 hover:bg-indigo-600"
                 >
                     <span className="hidden md:block">New Requistion</span>
                     <LuPlus size={18} />

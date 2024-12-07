@@ -1,5 +1,5 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Requisition } from "@/libs/definitions";
+import { Requisition } from "@/lib/definitions";
 import { getServerSession } from "next-auth";
 import { format } from "date-fns";
 import {
@@ -153,9 +153,12 @@ export default async function RequisitionList() {
                         <div className="col-span-full md:row-start-2 md:col-start-11 md:col-span-2 md:justify-self-end">
                             <Link
                                 href={`/dashboard/requisitions/${requisition.id}`}
-                                className="w-full h-10 btn btn-primary"
+                                className="w-full flex h-10 items-center justify-center rounded-lg px-4 gap-2 text-sm font-medium text-white
+                                bg-blue-600 hover:bg-indigo-600"
                             >
-                                <span>View Details</span>
+                                <span className="text-center">
+                                    View Details
+                                </span>
                             </Link>
                         </div>
                     </div>
