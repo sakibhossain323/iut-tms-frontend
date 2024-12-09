@@ -130,7 +130,7 @@ const RegisterPage = () => {
                             </div>
                         </div>
 
-                        <button className="btn btn-primary w-full mt-4">
+                        <button className="bg-blue-600 w-full mt-4">
                             Register
                         </button>
                     </form>
@@ -138,7 +138,7 @@ const RegisterPage = () => {
                     <div className="text-sm text-center text-gray-500 mt-4">
                         Already have an account?{" "}
                         <Link href="/auth/login">
-                            <span className="text-primary cursor-pointer">
+                            <span className="text-blue-600 cursor-pointer">
                                 Login
                             </span>
                         </Link>
