@@ -14,13 +14,16 @@ import Link from "next/link";
 
 export default async function RequisitionList() {
     const session = await getServerSession(authOptions);
-    const res = await fetch(process.env.BACKEND_BASE_URL + "/requisitions", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.accessToken}`,
-        },
-    });
+    const res = await fetch(
+        process.env.BACKEND_BASE_URL + "/requisitions?sort=created_at,desc",
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+        }
+    );
 
     if (!res.ok) {
         return <div>Failed to fetch data</div>;

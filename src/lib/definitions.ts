@@ -18,3 +18,8 @@ export interface Requisition {
     created_at: string;
     updated_at: string;
 }
+
+export type State = {
+    message: string;
+    errors?: Record<string, string[]>;
+};

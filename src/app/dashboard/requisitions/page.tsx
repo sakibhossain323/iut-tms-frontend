@@ -9,9 +9,11 @@ export default function Page() {
     return (
         <div className="w-full p-2">
             <div className="flex w-full items-center justify-between">
-                <h1 className="text-xl font-semibold">Requisitions</h1>
+                <h1 className="text-2xl font-semibold font-mono">
+                    Requisitions
+                </h1>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-2">
+            <div className="mt-8 flex items-center justify-between gap-2">
                 <SearchRequisitions />
                 <Link
                     href="/dashboard/requisitions/new"
