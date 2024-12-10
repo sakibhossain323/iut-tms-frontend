@@ -7,6 +7,16 @@ import { z } from "zod";
 import { RequisitionFormSchema } from "@/lib/validations";
 import { State } from "@/lib/definitions";
 
+async function getToken() {
+    const session = await getServerSession(authOptions);
+    return session?.accessToken as string;
+}
+
+async function getPayload() {
+    const token = await getToken();
+    return JSON.parse(atob(token.split(".")[1]));
+}
+
 export async function createRequisition(prevState: State, formData: FormData) {
     const validation = RequisitionFormSchema.safeParse({
         purpose: formData.get("purpose"),
@@ -68,4 +78,30 @@ export async function createRequisition(prevState: State, formData: FormData) {
 
     revalidatePath("/dashboard/requisitions");
     redirect("/dashboard/requisitions");
+}
+
+export async function updateRequisitionStatus(formData: FormData) {
+    const reqBody = {
+        status: formData.get("status"),
+    };
+    const token = await getToken();
+    const id = formData.get("id");
+    const url =
+        process.env.NEXT_PUBLIC_BACKEND_BASE_URL + "/requisitions/" + id;
+    const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(reqBody),
+    });
+
+    if (!res.ok) {
+        console.error(res.status);
+        return { message: "Failed to update status" };
+    }
+
+    revalidatePath("/dashboard/requisitions/" + id);
+    redirect("/dashboard/requisitions/" + id);
 }
