@@ -5,7 +5,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { LuPlus } from "react-icons/lu";
 
-export default function Page() {
+export default async function Page({
+    searchParams,
+}: {
+    searchParams?: Promise<{ page?: string }>;
+}) {
+    const currentPage = (await searchParams)?.page || "1";
     return (
         <div className="w-full p-2">
             <div className="flex w-full items-center justify-between">
@@ -25,7 +30,7 @@ export default function Page() {
                 </Link>
             </div>
             <Suspense fallback={<ListSkeleton />}>
-                <RequisitionList />
+                <RequisitionList page={currentPage} />
             </Suspense>
         </div>
     );

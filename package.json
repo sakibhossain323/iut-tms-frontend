@@ -3,14 +3,16 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "dotenv -e .env next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint"
     },
     "dependencies": {
         "@hookform/resolvers": "^3.9.1",
+        "@radix-ui/react-dialog": "^1.1.2",
         "@radix-ui/react-label": "^2.1.0",
+        "@radix-ui/react-select": "^2.1.2",
         "@radix-ui/react-slot": "^1.1.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -30,6 +32,7 @@
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "dotenv-cli": "^8.0.0",
         "eslint": "^8",
         "eslint-config-next": "15.0.2",
         "postcss": "^8",
