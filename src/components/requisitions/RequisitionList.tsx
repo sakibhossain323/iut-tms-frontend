@@ -6,7 +6,7 @@ import {
     LuBan,
     LuCalendarCheck,
     LuCalendarX,
-    LuCheckCircle,
+    LuCircleCheckBig,
 } from "react-icons/lu";
 import { MdPinDrop } from "react-icons/md";
 import { BsQuestionDiamond } from "react-icons/bs";
@@ -43,7 +43,7 @@ export default async function RequisitionList({ page }: { page: string }) {
             label: "Pending",
         },
         COMPLETED: {
-            icon: LuCheckCircle,
+            icon: LuCircleCheckBig,
             color: "text-green-600",
             label: "Approved",
         },
