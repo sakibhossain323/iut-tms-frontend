@@ -26,6 +26,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -69,10 +70,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         },
     ];
 
+    const { data } = useSession();
+
     return (
         <SidebarProvider>
             <div className="flex min-h-screen">
                 <Sidebar collapsible="icon">
+                    {/* Sidebar header */}
                     <SidebarHeader>
                         <SidebarMenu>
                             <SidebarMenuItem>
@@ -87,6 +91,8 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarHeader>
+
+                    {/* Sidebar navigation routes */}
                     <SidebarContent>
                         <SidebarMenu>
                             {routes.map((route) => (
@@ -96,35 +102,45 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                                         isActive={pathname === route.href}
                                         tooltip={route.title}
                                     >
-                                        <a href={route.href}>
+                                        <Link href={route.href}>
                                             <route.icon className="h-5 w-5" />
                                             <span>{route.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
                     </SidebarContent>
+
+                    {/* Sidebar footer */}
                     <SidebarFooter>
-                        <div className="flex items-center justify-between p-4">
-                            <Avatar>
-                                <AvatarImage
-                                    src="/placeholder-user.jpg"
-                                    alt="Admin"
-                                />
-                                <AvatarFallback>AD</AvatarFallback>
-                            </Avatar>
-                            <div className="ml-2 space-y-1 hidden group-data-[state=expanded]:block">
-                                <p className="text-sm font-medium leading-none">
-                                    admin user
-                                </p>
-                                <p className="text-xs leading-none text-muted-foreground">
-                                    admin-user@testing.com
-                                </p>
-                            </div>
-                        </div>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton className="py-6">
+                                    <div className="flex items-center">
+                                        <Avatar>
+                                            <AvatarImage src="/placeholder-user.jpg" />
+                                            <AvatarFallback className="border-2">
+                                                {(data?.user?.name ||
+                                                    "u")[0].toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="ml-2 space-y-1 hidden group-data-[state=expanded]:block">
+                                            <p className="text-sm font-medium leading-none">
+                                                {data?.user?.name}
+                                            </p>
+                                            <p className="text-xs leading-none text-muted-foreground">
+                                                {data?.user?.email}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
+
+                {/* Main content */}
                 <SidebarInset className="flex flex-col">
                     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
                         <SidebarTrigger />
