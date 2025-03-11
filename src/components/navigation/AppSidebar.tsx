@@ -35,37 +35,37 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         {
             title: "Dashboard",
             icon: HomeIcon,
-            href: "/",
+            href: "/admin",
             variant: "default" as const,
         },
         {
             title: "Requisitions",
             icon: FileTextIcon,
-            href: "/requisitions",
+            href: "/admin/requisitions",
             variant: "default" as const,
         },
         {
             title: "Subscriptions",
             icon: UsersIcon,
-            href: "/subscriptions",
+            href: "/admin/subscriptions",
             variant: "default" as const,
         },
         {
-            title: "One-Time Ticketing",
+            title: "One-Time Tickets",
             icon: TicketIcon,
-            href: "/ticketing",
+            href: "/admin/tickets",
             variant: "default" as const,
         },
         {
             title: "Vehicles",
             icon: CarIcon,
-            href: "/vehicles",
+            href: "/admin/vehicles",
             variant: "default" as const,
         },
         {
             title: "Trips",
             icon: CalendarIcon,
-            href: "/trips",
+            href: "/admin/trips",
             variant: "default" as const,
         },
     ];
@@ -74,7 +74,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen">
+            <div className="flex min-h-screen w-full">
                 <Sidebar collapsible="icon">
                     {/* Sidebar header */}
                     <SidebarHeader>
