@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -18,6 +21,98 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SubscriptionsPage() {
+    const [activeTab, setActiveTab] = useState("active");
+
+    const activeSubscriptions = [
+        {
+            id: "SUB-001",
+            user: "John Smith",
+            route: "Route A - City Center",
+            schedule: "Daily, Morning & Evening",
+            startDate: "Jan 15, 2025",
+            endDate: "Dec 31, 2025",
+            status: "active",
+        },
+        {
+            id: "SUB-002",
+            user: "Emma Williams",
+            route: "Route B - Campus Loop",
+            schedule: "Weekdays, Afternoon Only",
+            startDate: "Feb 1, 2025",
+            endDate: "Jul 31, 2025",
+            status: "active",
+        },
+        {
+            id: "SUB-003",
+            user: "David Lee",
+            route: "Route C - Express Line",
+            schedule: "Weekdays, Morning Only",
+            startDate: "Mar 10, 2025",
+            endDate: "Mar 10, 2026",
+            status: "active",
+        },
+    ];
+
+    const pendingSubscriptions = [
+        {
+            id: "SUB-004",
+            user: "Sarah Johnson",
+            route: "Route A - City Center",
+            schedule: "Daily, Morning & Evening",
+            requestedDate: "May 2, 2025",
+            availableSeats: 3,
+            queuePosition: 1,
+        },
+        {
+            id: "SUB-005",
+            user: "Michael Wilson",
+            route: "Route B - Campus Loop",
+            schedule: "Weekdays, Full Day",
+            requestedDate: "May 3, 2025",
+            availableSeats: 0,
+            queuePosition: 2,
+        },
+        {
+            id: "SUB-006",
+            user: "James Taylor",
+            route: "Route C - Express Line",
+            schedule: "Weekdays, Morning Only",
+            requestedDate: "May 4, 2025",
+            availableSeats: 2,
+            queuePosition: 3,
+        },
+    ];
+
+    const canceledTrips = [
+        {
+            id: "TRIP-001",
+            user: "John Smith",
+            route: "Route A - City Center",
+            schedule: "Morning",
+            date: "May 10, 2025",
+            canceledOn: "May 5, 2025",
+            status: "available",
+        },
+        {
+            id: "TRIP-002",
+            user: "Emma Williams",
+            route: "Route B - Campus Loop",
+            schedule: "Afternoon",
+            date: "May 12, 2025",
+            canceledOn: "May 6, 2025",
+            status: "added",
+        },
+        {
+            id: "TRIP-003",
+            user: "David Lee",
+            route: "Route C - Express Line",
+            schedule: "Morning",
+            date: "May 15, 2025",
+            canceledOn: "May 7, 2025",
+            status: "available",
+        },
+    ];
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -29,7 +124,11 @@ export default function SubscriptionsPage() {
                 </div>
             </div>
 
-            <Tabs defaultValue="active">
+            <Tabs
+                defaultValue="active"
+                onValueChange={setActiveTab}
+                value={activeTab}
+            >
                 <TabsList className="grid w-full grid-cols-3 max-w-md">
                     <TabsTrigger value="active">Active</TabsTrigger>
                     <TabsTrigger value="pending">Request Queue</TabsTrigger>
@@ -60,84 +159,37 @@ export default function SubscriptionsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            John Smith
-                                        </TableCell>
-                                        <TableCell>
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>
-                                            Daily, Morning & Evening
-                                        </TableCell>
-                                        <TableCell>Jan 15, 2025</TableCell>
-                                        <TableCell>Dec 31, 2025</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Active
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Manage
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Emma Williams
-                                        </TableCell>
-                                        <TableCell>
-                                            Route B - Campus Loop
-                                        </TableCell>
-                                        <TableCell>
-                                            Weekdays, Afternoon Only
-                                        </TableCell>
-                                        <TableCell>Feb 1, 2025</TableCell>
-                                        <TableCell>Jul 31, 2025</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Active
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Manage
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            David Lee
-                                        </TableCell>
-                                        <TableCell>
-                                            Route C - Express Line
-                                        </TableCell>
-                                        <TableCell>
-                                            Weekdays, Morning Only
-                                        </TableCell>
-                                        <TableCell>Mar 10, 2025</TableCell>
-                                        <TableCell>Mar 10, 2026</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Active
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Manage
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {activeSubscriptions.map((sub) => (
+                                        <TableRow key={sub.id}>
+                                            <TableCell className="font-medium">
+                                                {sub.user}
+                                            </TableCell>
+                                            <TableCell>{sub.route}</TableCell>
+                                            <TableCell>
+                                                {sub.schedule}
+                                            </TableCell>
+                                            <TableCell>
+                                                {sub.startDate}
+                                            </TableCell>
+                                            <TableCell>{sub.endDate}</TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="bg-green-100 text-green-800 hover:bg-green-100"
+                                                >
+                                                    Active
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    Manage
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -169,69 +221,51 @@ export default function SubscriptionsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Sarah Johnson
-                                        </TableCell>
-                                        <TableCell>
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>
-                                            Daily, Morning & Evening
-                                        </TableCell>
-                                        <TableCell>May 2, 2025</TableCell>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm" className="mr-2">
-                                                Approve
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                Decline
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Michael Wilson
-                                        </TableCell>
-                                        <TableCell>
-                                            Route B - Campus Loop
-                                        </TableCell>
-                                        <TableCell>
-                                            Weekdays, Full Day
-                                        </TableCell>
-                                        <TableCell>May 3, 2025</TableCell>
-                                        <TableCell>0</TableCell>
-                                        <TableCell>2</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            James Taylor
-                                        </TableCell>
-                                        <TableCell>
-                                            Route C - Express Line
-                                        </TableCell>
-                                        <TableCell>
-                                            Weekdays, Morning Only
-                                        </TableCell>
-                                        <TableCell>May 4, 2025</TableCell>
-                                        <TableCell>2</TableCell>
-                                        <TableCell>3</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm" className="mr-2">
-                                                Approve
-                                            </Button>
-                                            <Button variant="outline" size="sm">
-                                                Decline
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {pendingSubscriptions.map((sub) => (
+                                        <TableRow key={sub.id}>
+                                            <TableCell className="font-medium">
+                                                {sub.user}
+                                            </TableCell>
+                                            <TableCell>{sub.route}</TableCell>
+                                            <TableCell>
+                                                {sub.schedule}
+                                            </TableCell>
+                                            <TableCell>
+                                                {sub.requestedDate}
+                                            </TableCell>
+                                            <TableCell>
+                                                {sub.availableSeats}
+                                            </TableCell>
+                                            <TableCell>
+                                                {sub.queuePosition}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {sub.availableSeats > 0 ? (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            className="mr-2"
+                                                        >
+                                                            Approve
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            Decline
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        View
+                                                    </Button>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -263,78 +297,46 @@ export default function SubscriptionsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            John Smith
-                                        </TableCell>
-                                        <TableCell>
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>Morning</TableCell>
-                                        <TableCell>May 10, 2025</TableCell>
-                                        <TableCell>May 5, 2025</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-blue-100 text-blue-800 hover:bg-blue-100"
-                                            >
-                                                Available for Ticket
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Add to Ticketing
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Emma Williams
-                                        </TableCell>
-                                        <TableCell>
-                                            Route B - Campus Loop
-                                        </TableCell>
-                                        <TableCell>Afternoon</TableCell>
-                                        <TableCell>May 12, 2025</TableCell>
-                                        <TableCell>May 6, 2025</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Added to Ticketing
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View Tickets
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            David Lee
-                                        </TableCell>
-                                        <TableCell>
-                                            Route C - Express Line
-                                        </TableCell>
-                                        <TableCell>Morning</TableCell>
-                                        <TableCell>May 15, 2025</TableCell>
-                                        <TableCell>May 7, 2025</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-blue-100 text-blue-800 hover:bg-blue-100"
-                                            >
-                                                Available for Ticket
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Add to Ticketing
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {canceledTrips.map((trip) => (
+                                        <TableRow key={trip.id}>
+                                            <TableCell className="font-medium">
+                                                {trip.user}
+                                            </TableCell>
+                                            <TableCell>{trip.route}</TableCell>
+                                            <TableCell>
+                                                {trip.schedule}
+                                            </TableCell>
+                                            <TableCell>{trip.date}</TableCell>
+                                            <TableCell>
+                                                {trip.canceledOn}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={
+                                                        trip.status ===
+                                                        "available"
+                                                            ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                                            : "bg-green-100 text-green-800 hover:bg-green-100"
+                                                    }
+                                                >
+                                                    {trip.status === "available"
+                                                        ? "Available for Ticket"
+                                                        : "Added to Ticketing"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    {trip.status === "available"
+                                                        ? "Add to Ticketing"
+                                                        : "View Tickets"}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>

@@ -9,6 +9,7 @@ import {
     FileTextIcon,
     HomeIcon,
     TicketIcon,
+    UserIcon,
     UsersIcon,
 } from "lucide-react";
 import {
@@ -39,6 +40,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             variant: "default" as const,
         },
         {
+            title: "Trips",
+            icon: CalendarIcon,
+            href: "/admin/trips",
+            variant: "default" as const,
+        },
+        {
             title: "Requisitions",
             icon: FileTextIcon,
             href: "/admin/requisitions",
@@ -63,9 +70,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             variant: "default" as const,
         },
         {
-            title: "Trips",
-            icon: CalendarIcon,
-            href: "/admin/trips",
+            title: "Drivers",
+            icon: UserIcon,
+            href: "/admin/drivers",
             variant: "default" as const,
         },
     ];

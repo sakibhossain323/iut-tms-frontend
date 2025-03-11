@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -17,7 +20,93 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function TicketingPage() {
+export default function TicketsPage() {
+    const [activeTab, setActiveTab] = useState("available");
+
+    const availableTickets = [
+        {
+            id: "TKT-A001",
+            route: "Route A - City Center",
+            tripTime: "8:00 AM",
+            date: "May 10, 2025",
+            availableSeats: 12,
+            price: 5.0,
+            source: "Regular Schedule",
+        },
+        {
+            id: "TKT-A002",
+            route: "Route B - Campus Loop",
+            tripTime: "2:30 PM",
+            date: "May 12, 2025",
+            availableSeats: 8,
+            price: 3.5,
+            source: "Subscription Cancelation",
+        },
+        {
+            id: "TKT-A003",
+            route: "Route C - Express Line",
+            tripTime: "7:30 AM",
+            date: "May 15, 2025",
+            availableSeats: 5,
+            price: 6.5,
+            source: "Subscription Cancelation",
+        },
+    ];
+
+    const soldTickets = [
+        {
+            id: "TKT-10058",
+            route: "Route A - City Center",
+            tripTime: "8:00 AM",
+            date: "May 10, 2025",
+            passenger: "Lisa Garcia",
+            price: 5.0,
+        },
+        {
+            id: "TKT-10059",
+            route: "Route A - City Center",
+            tripTime: "8:00 AM",
+            date: "May 10, 2025",
+            passenger: "Mark Wilson",
+            price: 5.0,
+        },
+        {
+            id: "TKT-10060",
+            route: "Route B - Campus Loop",
+            tripTime: "2:30 PM",
+            date: "May 12, 2025",
+            passenger: "Sam Johnson",
+            price: 3.5,
+        },
+    ];
+
+    const transactions = [
+        {
+            id: "TRX-5023",
+            type: "Sale",
+            dateTime: "May 5, 2025, 10:23 AM",
+            amount: 5.0,
+            paymentMethod: "Credit Card",
+            status: "completed",
+        },
+        {
+            id: "TRX-5024",
+            type: "Sale",
+            dateTime: "May 5, 2025, 10:45 AM",
+            amount: 5.0,
+            paymentMethod: "Cash",
+            status: "completed",
+        },
+        {
+            id: "TRX-5025",
+            type: "Refund",
+            dateTime: "May 6, 2025, 2:15 PM",
+            amount: -3.5,
+            paymentMethod: "Credit Card",
+            status: "processed",
+        },
+    ];
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -29,7 +118,11 @@ export default function TicketingPage() {
                 </div>
             </div>
 
-            <Tabs defaultValue="available">
+            <Tabs
+                defaultValue="available"
+                onValueChange={setActiveTab}
+                value={activeTab}
+            >
                 <TabsList className="grid w-full grid-cols-3 max-w-md">
                     <TabsTrigger value="available">
                         Available Tickets
@@ -64,55 +157,31 @@ export default function TicketingPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>8:00 AM</TableCell>
-                                        <TableCell>May 10, 2025</TableCell>
-                                        <TableCell>12</TableCell>
-                                        <TableCell>$5.00</TableCell>
-                                        <TableCell>Regular Schedule</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm">
-                                                Sell Tickets
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Route B - Campus Loop
-                                        </TableCell>
-                                        <TableCell>2:30 PM</TableCell>
-                                        <TableCell>May 12, 2025</TableCell>
-                                        <TableCell>8</TableCell>
-                                        <TableCell>$3.50</TableCell>
-                                        <TableCell>
-                                            Subscription Cancelation
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm">
-                                                Sell Tickets
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            Route C - Express Line
-                                        </TableCell>
-                                        <TableCell>7:30 AM</TableCell>
-                                        <TableCell>May 15, 2025</TableCell>
-                                        <TableCell>5</TableCell>
-                                        <TableCell>$6.50</TableCell>
-                                        <TableCell>
-                                            Subscription Cancelation
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm">
-                                                Sell Tickets
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {availableTickets.map((ticket) => (
+                                        <TableRow key={ticket.id}>
+                                            <TableCell className="font-medium">
+                                                {ticket.route}
+                                            </TableCell>
+                                            <TableCell>
+                                                {ticket.tripTime}
+                                            </TableCell>
+                                            <TableCell>{ticket.date}</TableCell>
+                                            <TableCell>
+                                                {ticket.availableSeats}
+                                            </TableCell>
+                                            <TableCell>
+                                                ${ticket.price.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {ticket.source}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button size="sm">
+                                                    Sell Tickets
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -143,57 +212,34 @@ export default function TicketingPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TKT-10058
-                                        </TableCell>
-                                        <TableCell>
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>8:00 AM</TableCell>
-                                        <TableCell>May 10, 2025</TableCell>
-                                        <TableCell>Lisa Garcia</TableCell>
-                                        <TableCell>$5.00</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TKT-10059
-                                        </TableCell>
-                                        <TableCell>
-                                            Route A - City Center
-                                        </TableCell>
-                                        <TableCell>8:00 AM</TableCell>
-                                        <TableCell>May 10, 2025</TableCell>
-                                        <TableCell>Mark Wilson</TableCell>
-                                        <TableCell>$5.00</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TKT-10060
-                                        </TableCell>
-                                        <TableCell>
-                                            Route B - Campus Loop
-                                        </TableCell>
-                                        <TableCell>2:30 PM</TableCell>
-                                        <TableCell>May 12, 2025</TableCell>
-                                        <TableCell>Sam Johnson</TableCell>
-                                        <TableCell>$3.50</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                View
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {soldTickets.map((ticket) => (
+                                        <TableRow key={ticket.id}>
+                                            <TableCell className="font-medium">
+                                                {ticket.id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {ticket.route}
+                                            </TableCell>
+                                            <TableCell>
+                                                {ticket.tripTime}
+                                            </TableCell>
+                                            <TableCell>{ticket.date}</TableCell>
+                                            <TableCell>
+                                                {ticket.passenger}
+                                            </TableCell>
+                                            <TableCell>
+                                                ${ticket.price.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    View
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
@@ -224,78 +270,54 @@ export default function TicketingPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TRX-5023
-                                        </TableCell>
-                                        <TableCell>Sale</TableCell>
-                                        <TableCell>
-                                            May 5, 2025, 10:23 AM
-                                        </TableCell>
-                                        <TableCell>$5.00</TableCell>
-                                        <TableCell>Credit Card</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Completed
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Receipt
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TRX-5024
-                                        </TableCell>
-                                        <TableCell>Sale</TableCell>
-                                        <TableCell>
-                                            May 5, 2025, 10:45 AM
-                                        </TableCell>
-                                        <TableCell>$5.00</TableCell>
-                                        <TableCell>Cash</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-green-100 text-green-800 hover:bg-green-100"
-                                            >
-                                                Completed
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Receipt
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium">
-                                            TRX-5025
-                                        </TableCell>
-                                        <TableCell>Refund</TableCell>
-                                        <TableCell>
-                                            May 6, 2025, 2:15 PM
-                                        </TableCell>
-                                        <TableCell>-$3.50</TableCell>
-                                        <TableCell>Credit Card</TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-blue-100 text-blue-800 hover:bg-blue-100"
-                                            >
-                                                Processed
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                Details
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                    {transactions.map((transaction) => (
+                                        <TableRow key={transaction.id}>
+                                            <TableCell className="font-medium">
+                                                {transaction.id}
+                                            </TableCell>
+                                            <TableCell>
+                                                {transaction.type}
+                                            </TableCell>
+                                            <TableCell>
+                                                {transaction.dateTime}
+                                            </TableCell>
+                                            <TableCell>
+                                                $
+                                                {Math.abs(
+                                                    transaction.amount
+                                                ).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {transaction.paymentMethod}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={
+                                                        transaction.status ===
+                                                        "completed"
+                                                            ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                                            : "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                                    }
+                                                >
+                                                    {transaction.status ===
+                                                    "completed"
+                                                        ? "Completed"
+                                                        : "Processed"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    {transaction.type === "Sale"
+                                                        ? "Receipt"
+                                                        : "Details"}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </CardContent>
