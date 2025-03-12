@@ -1,17 +1,14 @@
-// app/api/auth/[...nextauth]/route.ts
-import { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { User } from "next-auth";
 
-// Extend the base User type
-interface CustomUser extends User {
-    token: string;
-}
-
-interface Credentials {
-    email: string;
-    password: string;
-}
+const attemptLogin = async (requestBody: any) => {
+    const res = await fetch(process.env.BACKEND_BASE_URL + "/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+    });
+    return res;
+};
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -21,29 +18,25 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials): Promise<User | null> {
+            async authorize(credentials) {
                 try {
-                    const creds = credentials as Credentials;
-
-                    const body = {
-                        email: creds.email,
-                        password: creds.password,
+                    const requestBody = {
+                        email: credentials?.email,
+                        password: credentials?.password,
                     };
+                    const res = await attemptLogin(requestBody);
+                    const data = await res.json();
 
-                    const res = await fetch(
-                        process.env.BACKEND_BASE_URL + "/auth/login",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(body),
-                        }
-                    );
-
-                    const user = await res.json();
-
-                    if (res.ok && user) {
-                        return { ...user, token: user.token }; // Return token as part of user
+                    if (res.ok && data?.user && data?.token) {
+                        const user = data?.user;
+                        return {
+                            id: user?.id,
+                            email: user?.email,
+                            name: user?.username,
+                            token: data?.token,
+                        };
                     }
+
                     return null;
                 } catch (error) {
                     console.error("Auth error:", error);
@@ -62,7 +55,10 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.accessToken = (user as CustomUser).token;
+                token.sub = user.id;
+                token.email = user.email;
+                token.name = user.name;
+                token.accessToken = user.token;
             }
             return token;
         },
@@ -76,6 +72,5 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.JWT_SECRET,
 };
 
-import NextAuth from "next-auth";
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
