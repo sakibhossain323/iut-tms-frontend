@@ -7,8 +7,12 @@ import {
     CalendarIcon,
     CarIcon,
     FileTextIcon,
+    HelpCircle,
     HomeIcon,
+    LogOut,
+    Settings,
     TicketIcon,
+    User,
     UserIcon,
     UsersIcon,
 } from "lucide-react";
@@ -26,8 +30,15 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -77,7 +88,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         },
     ];
 
-    const { data } = useSession();
+    const { data: session } = useSession();
 
     return (
         <SidebarProvider>
@@ -121,29 +132,53 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
                     {/* Sidebar footer */}
                     <SidebarFooter>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton className="py-6">
+                        <DropdownMenu>
+                            {/* user info */}
+                            <DropdownMenuTrigger asChild>
+                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-sidebar-accent rounded-md transition-colors">
                                     <div className="flex items-center">
                                         <Avatar>
-                                            <AvatarImage src="/placeholder-user.jpg" />
-                                            <AvatarFallback className="border-2">
-                                                {(data?.user?.name ||
-                                                    "u")[0].toUpperCase()}
+                                            <AvatarImage src="/placeholder.svg?height=40&width=40" />
+                                            <AvatarFallback className="border">
+                                                {session?.user?.name![0].toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="ml-2 space-y-1 hidden group-data-[state=expanded]:block">
                                             <p className="text-sm font-medium leading-none">
-                                                {data?.user?.name}
+                                                {session?.user?.name}
                                             </p>
                                             <p className="text-xs leading-none text-muted-foreground">
-                                                {data?.user?.email}
+                                                {session?.user?.email}
                                             </p>
                                         </div>
                                     </div>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
+                                </div>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem>
+                                    <User className="mr-2 h-4 w-4" />
+                                    <span>Profile</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    <span>Settings</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <HelpCircle className="mr-2 h-4 w-4" />
+                                    <span>Help & Support</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-red-600">
+                                    <SidebarMenuButton
+                                        onClick={async () => await signOut()}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Log out</span>
+                                    </SidebarMenuButton>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </SidebarFooter>
                 </Sidebar>
 
