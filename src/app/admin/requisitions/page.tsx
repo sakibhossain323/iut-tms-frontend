@@ -1,3 +1,11 @@
+"use client";
+
+import type React from "react";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -6,15 +14,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -22,98 +22,104 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { RequisitionTable } from "@/components/requisitions/requisition-table";
+import { RequisitionTableSkeleton } from "@/components/requisitions/requisition-table-skeleton";
+import type { PaginatedRequisitions } from "@/lib/actions/requisition-actions";
+import { fetchRequisitionsAction } from "@/lib/actions/requisition-actions";
+import { Status } from "@/lib/definitions";
 
 export default function RequisitionsPage() {
-    const requisitions = [
-        {
-            id: "REQ-001",
-            requester: "John Doe",
-            department: "Marketing",
-            purpose: "Company Outing",
-            date: "May 20, 2025",
-            time: "8:00 AM - 5:00 PM",
-            passengers: 30,
-            status: "pending",
-            assignedVehicle: null,
-        },
-        {
-            id: "REQ-002",
-            requester: "Alice Johnson",
-            department: "Engineering",
-            purpose: "Client Visit",
-            date: "May 22, 2025",
-            time: "10:00 AM - 2:00 PM",
-            passengers: 8,
-            status: "pending",
-            assignedVehicle: null,
-        },
-        {
-            id: "REQ-003",
-            requester: "Robert Smith",
-            department: "Executive",
-            purpose: "Downtown Meeting",
-            date: "May 25, 2025",
-            time: "9:00 AM - 11:00 AM",
-            passengers: 4,
-            status: "pending",
-            assignedVehicle: null,
-        },
-        {
-            id: "REQ-004",
-            requester: "Emily Chen",
-            department: "HR",
-            purpose: "Training Session",
-            date: "May 18, 2025",
-            time: "1:00 PM - 4:00 PM",
-            passengers: 12,
-            status: "approved",
-            assignedVehicle: "BUS-103",
-        },
-        {
-            id: "REQ-005",
-            requester: "Michael Brown",
-            department: "Sales",
-            purpose: "Product Demo",
-            date: "May 15, 2025",
-            time: "9:00 AM - 12:00 PM",
-            passengers: 6,
-            status: "rejected",
-            assignedVehicle: null,
-        },
-    ];
-    // Status badge styling helper
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "pending":
-                return (
-                    <Badge
-                        variant="outline"
-                        className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                    >
-                        Pending
-                    </Badge>
-                );
-            case "approved":
-                return (
-                    <Badge
-                        variant="outline"
-                        className="bg-green-100 text-green-800 hover:bg-green-100"
-                    >
-                        Approved
-                    </Badge>
-                );
-            case "rejected":
-                return (
-                    <Badge
-                        variant="outline"
-                        className="bg-red-100 text-red-800 hover:bg-red-100"
-                    >
-                        Rejected
-                    </Badge>
-                );
-            default:
-                return <Badge variant="outline">{status}</Badge>;
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+
+    // Get initial values from URL
+    const initialQuery = searchParams.get("query") || "";
+    const initialStatus = searchParams.get("status") || "all";
+    const initialPage = Number.parseInt(searchParams.get("page") || "1", 10);
+    const initialPerPage = Number.parseInt(
+        searchParams.get("perPage") || "5",
+        10
+    );
+
+    // State for filters and pagination
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
+    const [statusFilter, setStatusFilter] = useState(initialStatus);
+    const [currentPage, setCurrentPage] = useState(initialPage);
+    const [itemsPerPage, setItemsPerPage] = useState(initialPerPage);
+
+    // State for requisitions data
+    const [requisitionsData, setRequisitionsData] =
+        useState<PaginatedRequisitions | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Function to fetch requisitions
+    const fetchRequisitions = async () => {
+        setIsLoading(true);
+
+        try {
+            // Build query string for URL update (not for data fetching)
+            const params = new URLSearchParams();
+            if (searchQuery) params.set("query", searchQuery);
+            if (statusFilter !== "all") params.set("status", statusFilter);
+            params.set("page", currentPage.toString());
+            params.set("perPage", itemsPerPage.toString());
+
+            // Update URL without refreshing the page
+            router.push(`${pathname}?${params.toString()}`, { scroll: false });
+
+            // Call the server action directly instead of making an API request
+            const data = await fetchRequisitionsAction({
+                searchQuery,
+                statusFilter,
+                page: currentPage,
+                itemsPerPage,
+            });
+
+            setRequisitionsData(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    // Fetch requisitions when filters or pagination change
+    useEffect(() => {
+        fetchRequisitions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery, statusFilter, currentPage, itemsPerPage]);
+
+    // Handle search input change with debounce
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        // Reset to first page when search changes
+        setCurrentPage(1);
+        setSearchQuery(value);
+    };
+
+    // Handle status filter change
+    const handleStatusChange = (value: string) => {
+        // Reset to first page when filter changes
+        setCurrentPage(1);
+        setStatusFilter(value);
+    };
+
+    // Handle items per page change
+    const handleItemsPerPageChange = (value: string) => {
+        // Reset to first page when items per page changes
+        setCurrentPage(1);
+        setItemsPerPage(Number.parseInt(value, 10));
+    };
+
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    // Handle refresh button click
+    const handleRefresh = () => {
+        fetchRequisitions();
     };
 
     return (
@@ -123,121 +129,255 @@ export default function RequisitionsPage() {
                     Requisitions
                 </h2>
                 <div className="flex items-center space-x-2">
-                    <Button>New Requisition</Button>
+                    <Button asChild>
+                        <Link href="/requisitions/detail">New Requisition</Link>
+                    </Button>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
                             <CardTitle>All Requisitions</CardTitle>
                             <CardDescription>
                                 Manage vehicle requisition requests
                             </CardDescription>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Select defaultValue="all">
-                                <SelectTrigger className="w-[180px]">
+                        <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
+                            <div className="relative">
+                                <Input
+                                    placeholder="Search requisitions..."
+                                    value={searchQuery}
+                                    onChange={handleSearchChange}
+                                    className="w-full sm:w-[200px]"
+                                />
+                            </div>
+                            <Select
+                                value={statusFilter}
+                                onValueChange={handleStatusChange}
+                            >
+                                <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder="Filter by status" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">
                                         All Statuses
                                     </SelectItem>
-                                    <SelectItem value="pending">
+                                    <SelectItem value={Status.PENDING}>
                                         Pending
                                     </SelectItem>
-                                    <SelectItem value="approved">
+                                    <SelectItem value={Status.APPROVED}>
                                         Approved
                                     </SelectItem>
-                                    <SelectItem value="rejected">
+                                    <SelectItem value={Status.REJECTED}>
                                         Rejected
                                     </SelectItem>
-                                    <SelectItem value="completed">
+                                    <SelectItem value={Status.COMPLETED}>
                                         Completed
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            <Select
+                                value={itemsPerPage.toString()}
+                                onValueChange={handleItemsPerPageChange}
+                            >
+                                <SelectTrigger className="w-full sm:w-[100px]">
+                                    <SelectValue placeholder="Per page" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5">5</SelectItem>
+                                    <SelectItem value="10">10</SelectItem>
+                                    <SelectItem value="20">20</SelectItem>
+                                    <SelectItem value="50">50</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleRefresh}
+                                disabled={isLoading}
+                            >
+                                <RefreshCw
+                                    className={`h-4 w-4 ${
+                                        isLoading ? "animate-spin" : ""
+                                    }`}
+                                />
+                            </Button>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Requester</TableHead>
-                                <TableHead>Department</TableHead>
-                                <TableHead>Purpose</TableHead>
-                                <TableHead>Date & Time</TableHead>
-                                <TableHead>Passengers</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Assigned Vehicle</TableHead>
-                                <TableHead className="text-right">
-                                    Actions
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {requisitions.map((req) => (
-                                <TableRow key={req.id}>
-                                    <TableCell className="font-medium">
-                                        {req.requester}
-                                    </TableCell>
-                                    <TableCell>{req.department}</TableCell>
-                                    <TableCell>{req.purpose}</TableCell>
-                                    <TableCell>
-                                        {req.date}
-                                        <br />
-                                        {req.time}
-                                    </TableCell>
-                                    <TableCell>{req.passengers}</TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(req.status)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {req.assignedVehicle || "Not Assigned"}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {req.status === "pending" ? (
-                                            <>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="mr-2"
-                                                >
-                                                    Assign
-                                                </Button>
-                                                <Button size="sm">
-                                                    Review
-                                                </Button>
-                                            </>
-                                        ) : req.status === "approved" ? (
-                                            <>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="mr-2"
-                                                >
-                                                    Reassign
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                >
-                                                    View
-                                                </Button>
-                                            </>
-                                        ) : (
-                                            <Button variant="outline" size="sm">
-                                                View
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    {isLoading ? (
+                        <RequisitionTableSkeleton />
+                    ) : requisitionsData ? (
+                        <>
+                            <RequisitionTable
+                                requisitions={requisitionsData.data}
+                            />
+
+                            {/* Pagination controls */}
+                            <div className="mt-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-muted-foreground">
+                                        Showing{" "}
+                                        {requisitionsData.totalItems > 0
+                                            ? (requisitionsData.currentPage -
+                                                  1) *
+                                                  itemsPerPage +
+                                              1
+                                            : 0}{" "}
+                                        to{" "}
+                                        {Math.min(
+                                            requisitionsData.currentPage *
+                                                itemsPerPage,
+                                            requisitionsData.totalItems
+                                        )}{" "}
+                                        of {requisitionsData.totalItems} entries
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        disabled={
+                                            requisitionsData.currentPage === 1
+                                        }
+                                        onClick={() =>
+                                            handlePageChange(
+                                                requisitionsData.currentPage - 1
+                                            )
+                                        }
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+
+                                    {/* Improved pagination logic */}
+                                    <div className="flex items-center gap-1">
+                                        {(() => {
+                                            const totalPages =
+                                                requisitionsData.totalPages;
+                                            const currentPage =
+                                                requisitionsData.currentPage;
+
+                                            // Always show first page
+                                            const pages = [1];
+
+                                            // Calculate range to show around current page
+                                            let rangeStart = Math.max(
+                                                2,
+                                                currentPage - 1
+                                            );
+                                            let rangeEnd = Math.min(
+                                                totalPages - 1,
+                                                currentPage + 1
+                                            );
+
+                                            // Adjust range to show at least 3 pages if possible
+                                            if (rangeEnd - rangeStart < 2) {
+                                                if (rangeStart === 2) {
+                                                    rangeEnd = Math.min(
+                                                        4,
+                                                        totalPages - 1
+                                                    );
+                                                } else if (
+                                                    rangeEnd ===
+                                                    totalPages - 1
+                                                ) {
+                                                    rangeStart = Math.max(
+                                                        2,
+                                                        totalPages - 3
+                                                    );
+                                                }
+                                            }
+
+                                            // Add ellipsis after first page if needed
+                                            if (rangeStart > 2) {
+                                                pages.push(-1); // -1 represents ellipsis
+                                            }
+
+                                            // Add pages in the middle range
+                                            for (
+                                                let i = rangeStart;
+                                                i <= rangeEnd;
+                                                i++
+                                            ) {
+                                                pages.push(i);
+                                            }
+
+                                            // Add ellipsis before last page if needed
+                                            if (rangeEnd < totalPages - 1) {
+                                                pages.push(-2); // -2 represents second ellipsis (different key)
+                                            }
+
+                                            // Always show last page if there is more than one page
+                                            if (totalPages > 1) {
+                                                pages.push(totalPages);
+                                            }
+
+                                            // Render buttons
+                                            return pages.map((pageNum) => {
+                                                if (pageNum < 0) {
+                                                    // Render ellipsis
+                                                    return (
+                                                        <div
+                                                            key={pageNum}
+                                                            className="px-2"
+                                                        >
+                                                            &hellip;
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <Button
+                                                        key={pageNum}
+                                                        variant={
+                                                            currentPage ===
+                                                            pageNum
+                                                                ? "default"
+                                                                : "outline"
+                                                        }
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={() =>
+                                                            handlePageChange(
+                                                                pageNum
+                                                            )
+                                                        }
+                                                    >
+                                                        {pageNum}
+                                                    </Button>
+                                                );
+                                            });
+                                        })()}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        disabled={
+                                            requisitionsData.currentPage ===
+                                                requisitionsData.totalPages ||
+                                            requisitionsData.totalPages === 0
+                                        }
+                                        onClick={() =>
+                                            handlePageChange(
+                                                requisitionsData.currentPage + 1
+                                            )
+                                        }
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="py-8 text-center">
+                            Failed to load requisitions. Please try again.
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
