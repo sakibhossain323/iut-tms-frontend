@@ -89,7 +89,6 @@ export default function LoginPage() {
                 email,
                 password,
                 redirect: false,
-                callbackUrl: "/",
             });
 
             if (response?.error) {
