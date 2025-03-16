@@ -46,6 +46,25 @@ export interface User {
     createdAt: string;
 }
 
+export enum DriverStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+    ON_LEAVE = "ON_LEAVE",
+}
+
+export interface Driver {
+    id: string;
+    name: string;
+    licenseNumber: string;
+    licenseType: string;
+    contact: string;
+    email: string;
+    experience: string;
+    status: DriverStatus;
+    userId?: string;
+    createdAt: string;
+}
+
 export function getReqStat(status: string) {
     const statuses = {
         PENDING: {
