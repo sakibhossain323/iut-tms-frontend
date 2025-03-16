@@ -127,6 +127,8 @@ export type RequisitionsParams = {
     statusFilter?: string;
     page?: number;
     itemsPerPage?: number;
+    sortBy?: keyof Requisition;
+    sortDirection?: "asc" | "desc";
 };
 
 export type PaginatedRequisitions = {
@@ -143,6 +145,8 @@ export async function fetchRequisitionsAction({
     statusFilter = "all",
     page = 1,
     itemsPerPage = 5,
+    sortBy = "createdAt",
+    sortDirection = "desc",
 }: RequisitionsParams): Promise<PaginatedRequisitions> {
     const session = await getServerSession(authOptions);
     const url = process.env.BACKEND_BASE_URL + "/requisitions/all";
@@ -158,7 +162,6 @@ export async function fetchRequisitionsAction({
         throw new Error("Failed to fetch requisitions");
     }
     const requisitions: Requisition[] = await response.json();
-    console.log(requisitions);
 
     const filteredRequisitions = requisitions.filter((req) => {
         // Filter by status
@@ -178,6 +181,21 @@ export async function fetchRequisitionsAction({
         }
 
         return true;
+    });
+
+    filteredRequisitions.sort((a, b) => {
+        if (sortBy === "createdAt") {
+            return sortDirection === "asc"
+                ? a.createdAt.localeCompare(b.createdAt)
+                : b.createdAt.localeCompare(a.createdAt);
+        } else {
+            const aValue = String(a[sortBy]).toLowerCase();
+            const bValue = String(b[sortBy]).toLowerCase();
+
+            return sortDirection === "asc"
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+        }
     });
 
     // Calculate pagination

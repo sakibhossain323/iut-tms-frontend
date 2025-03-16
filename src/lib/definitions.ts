@@ -25,7 +25,26 @@ export type Requisition = {
         designation: string;
         role: string;
     };
+    createdAt: string;
 };
+
+export enum Role {
+    ADMIN = "ADMIN",
+    USER = "USER",
+    DRIVER = "DRIVER",
+    HOD = "HOD",
+    TRANSPORT_OFFICER = "TRANSPORT_OFFICER",
+}
+
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    designation: string;
+    contactNumber: string;
+    role: Role;
+    createdAt: string;
+}
 
 export function getReqStat(status: string) {
     const statuses = {
