@@ -162,7 +162,7 @@ export default function RequisitionsPage() {
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">
+                <h2 className="text-3xl font-bold tracking-tight font-mono">
                     Requisitions
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -179,8 +179,8 @@ export default function RequisitionsPage() {
                 <CardHeader>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
-                            <CardTitle>All Requisitions</CardTitle>
-                            <CardDescription>
+                            <CardTitle>Requisition Management</CardTitle>
+                            <CardDescription className="mt-1">
                                 Manage vehicle requisition requests
                             </CardDescription>
                         </div>

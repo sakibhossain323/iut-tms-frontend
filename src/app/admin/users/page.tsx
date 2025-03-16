@@ -188,8 +188,8 @@ export default function UsersPage() {
                 <CardHeader>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
-                            <CardTitle>All Users</CardTitle>
-                            <CardDescription>
+                            <CardTitle>User Management</CardTitle>
+                            <CardDescription className="mt-1">
                                 Manage users and their roles in the system
                             </CardDescription>
                         </div>
