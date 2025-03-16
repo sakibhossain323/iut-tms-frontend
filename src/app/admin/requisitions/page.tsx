@@ -130,7 +130,7 @@ export default function RequisitionsPage() {
                 </h2>
                 <div className="flex items-center space-x-2">
                     <Button asChild>
-                        <Link href="/requisitions/detail">New Requisition</Link>
+                        <Link href={`${pathname}/new`}>New Requisition</Link>
                     </Button>
                 </div>
             </div>
