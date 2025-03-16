@@ -3,7 +3,7 @@ export type State = {
     errors?: Record<string, string[]>;
 };
 
-export enum Status {
+export enum RequisitionStatus {
     PENDING = "PENDING",
     APPROVED = "APPROVED",
     REJECTED = "REJECTED",
@@ -16,7 +16,7 @@ export type Requisition = {
     purpose: string;
     dateTimeRequired: string;
     numberOfPassengers: number;
-    status: Status;
+    status: RequisitionStatus;
     assignedVehicle: string | null;
     user: {
         id: string;

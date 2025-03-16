@@ -9,7 +9,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Status, type Requisition } from "@/lib/definitions";
+import {
+    RequisitionStatus as Status,
+    type Requisition,
+} from "@/lib/definitions";
 import { format } from "date-fns/format";
 import { usePathname } from "next/navigation";
 

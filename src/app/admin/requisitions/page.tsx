@@ -26,7 +26,7 @@ import { RequisitionTable } from "@/components/requisitions/requisition-table";
 import { RequisitionTableSkeleton } from "@/components/requisitions/requisition-table-skeleton";
 import type { PaginatedRequisitions } from "@/lib/actions/requisition-actions";
 import { fetchRequisitionsAction } from "@/lib/actions/requisition-actions";
-import { Requisition, Status } from "@/lib/definitions";
+import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
 
 export default function RequisitionsPage() {
     const router = useRouter();
