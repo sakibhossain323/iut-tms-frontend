@@ -431,7 +431,7 @@ export default function DriversPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            Failed to load vehicles. Please try again.
+                            Failed to load drivers. Please try again.
                         </div>
                     )}
                 </CardContent>
