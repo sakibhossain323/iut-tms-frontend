@@ -1,9 +1,6 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +28,7 @@ import { DriverTable } from "@/components/drivers/driver-table";
 import { DriverTableSkeleton } from "@/components/drivers/driver-table-skeleton";
 import AddDriverDialog from "@/components/drivers/add-driver-dialog";
 
-export default function RequisitionsPage() {
+export default function DriversPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
