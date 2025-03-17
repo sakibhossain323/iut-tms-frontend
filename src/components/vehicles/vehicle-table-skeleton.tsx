@@ -8,7 +8,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-export function DriverTableSkeleton() {
+export function VehicleTableSkeleton() {
     return (
         <div className="w-full">
             <div className="rounded-md border">
@@ -16,10 +16,9 @@ export function DriverTableSkeleton() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>ID</TableHead>
-                            <TableHead></TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Contact</TableHead>
-                            <TableHead>License</TableHead>
+                            <TableHead>Registration No.</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Capacity</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">
                                 Actions
@@ -37,9 +36,6 @@ export function DriverTableSkeleton() {
                                 </TableCell>
                                 <TableCell>
                                     <Skeleton className="h-4 w-24" />
-                                </TableCell>
-                                <TableCell>
-                                    <Skeleton className="h-4 w-28" />
                                 </TableCell>
                                 <TableCell>
                                     <Skeleton className="h-4 w-28" />

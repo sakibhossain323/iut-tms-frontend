@@ -65,24 +65,17 @@ export interface Driver {
     };
 }
 
-export function getReqStat(status: string) {
-    const statuses = {
-        PENDING: {
-            color: "text-yellow-600",
-            label: "Pending",
-        },
-        COMPLETED: {
-            color: "text-green-600",
-            label: "Approved",
-        },
-        REJECTED: {
-            color: "text-red-600",
-            label: "Rejected",
-        },
-        OTHERS: {
-            color: "text-blue-600",
-            label: "In Review",
-        },
-    };
-    return statuses[status as keyof typeof statuses] || statuses.OTHERS;
+export enum VehicleStatus {
+    ACTIVE = "ACTIVE",
+    UNDER_MAINTENANCE = "UNDER_MAINTENANCE",
+    INACTIVE = "INACTIVE",
+}
+
+export interface Vehicle {
+    id: string;
+    registrationNumber: string;
+    type: string;
+    capacity: number;
+    status: VehicleStatus;
+    createdAt: string;
 }

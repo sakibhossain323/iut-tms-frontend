@@ -15,47 +15,52 @@ import { Label } from "../ui/label";
 import { Input } from "@/components/ui/input";
 import { useActionState } from "react";
 import { toast, Toaster } from "sonner";
-import { AddDriverAction, AddDriverResult } from "@/lib/actions/driver-actions";
+import {
+    AddVehicleAction,
+    AddVehicleResult,
+} from "@/lib/actions/vehicle-actions";
 
 // Initial form state
-const initialState: AddDriverResult = {
+const initialState: AddVehicleResult = {
     errors: {},
     success: false,
     message: "",
 };
 
-export default function AddDriverDialog({
+export default function AddVehicleDialog({
     handleRefresh,
 }: {
     handleRefresh: () => void;
 }) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [formState, formAction, isPending] = useActionState(
-        AddDriverAction,
+        AddVehicleAction,
         initialState
     );
 
     // Form data for client-side validation
     const [formData, setFormData] = useState({
-        email: "",
-        licenseNumber: "",
+        registrationNumber: "",
+        type: "",
+        capacity: "",
     });
 
     // Client-side validation errors
     const [clientErrors, setClientErrors] = useState({
-        email: "",
-        licenseNumber: "",
+        registrationNumber: "",
+        type: "",
+        capacity: "",
     });
 
     // Handle form state changes (from server action)
     useEffect(() => {
         if (formState.success) {
             toast.success("Success", {
-                description: "Driver has been added successfully.",
+                description: "Vehicle has been added successfully.",
             });
             // Close dialog after success
             setDialogOpen(false);
-            // Refresh driver list
+            // Refresh vehicle list
             handleRefresh();
         } else if (formState.message && !formState.success) {
             toast.error("Submission failed", {
@@ -67,8 +72,8 @@ export default function AddDriverDialog({
     // Reset form when dialog closes
     useEffect(() => {
         if (!dialogOpen) {
-            setFormData({ email: "", licenseNumber: "" });
-            setClientErrors({ email: "", licenseNumber: "" });
+            setFormData({ registrationNumber: "", type: "", capacity: "" });
+            setClientErrors({ registrationNumber: "", type: "", capacity: "" });
         }
     }, [dialogOpen]);
 
@@ -77,16 +82,23 @@ export default function AddDriverDialog({
         let error = "";
 
         switch (name) {
-            case "email":
+            case "registrationNumber":
                 if (!value.trim()) {
-                    error = "Email is required";
-                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    error = "Please enter a valid email address";
+                    error = "Registration number is required";
                 }
                 break;
-            case "licenseNumber":
+            case "type":
                 if (!value.trim()) {
-                    error = "License number is required";
+                    error = "Vehicle type is required";
+                }
+                break;
+            case "capacity":
+                if (!value.trim()) {
+                    error = "Capacity is required";
+                } else if (!/^\d+$/.test(value)) {
+                    error = "Capacity must be a number";
+                } else if (parseInt(value) < 1) {
+                    error = "Capacity must be a positive integer";
                 }
                 break;
         }
@@ -114,11 +126,12 @@ export default function AddDriverDialog({
     // Client-side validation before form submission
     const validateForm = () => {
         const newErrors = {
-            email: validateField("email", formData.email),
-            licenseNumber: validateField(
-                "licenseNumber",
-                formData.licenseNumber
+            registrationNumber: validateField(
+                "registrationNumber",
+                formData.registrationNumber
             ),
+            type: validateField("type", formData.type),
+            capacity: validateField("capacity", formData.capacity),
         };
 
         setClientErrors(newErrors);
@@ -151,13 +164,13 @@ export default function AddDriverDialog({
         <>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                    <Button size="sm">Add Driver</Button>
+                    <Button size="sm">Add Vehicle</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Add New Driver</DialogTitle>
+                        <DialogTitle>Add New Vehicle</DialogTitle>
                         <DialogDescription>
-                            Enter the user's email and license information
+                            Enter the vehicle registration, type, and capacity
                         </DialogDescription>
                     </DialogHeader>
 
@@ -176,56 +189,82 @@ export default function AddDriverDialog({
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">User Email</Label>
+                            <Label htmlFor="registrationNumber">
+                                Registration Number
+                            </Label>
                             <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="user@example.com"
-                                value={formData.email}
+                                id="registrationNumber"
+                                name="registrationNumber"
+                                placeholder="Enter registration number"
+                                value={formData.registrationNumber}
                                 onChange={handleInputChange}
                                 disabled={isPending}
                                 className={
-                                    getFieldError("email")
+                                    getFieldError("registrationNumber")
                                         ? "border-red-500"
                                         : ""
                                 }
                                 aria-invalid={
-                                    getFieldError("email") ? "true" : "false"
+                                    getFieldError("registrationNumber")
+                                        ? "true"
+                                        : "false"
                                 }
                             />
-                            {getFieldError("email") && (
+                            {getFieldError("registrationNumber") && (
                                 <p className="text-sm text-red-500">
-                                    {getFieldError("email")}
+                                    {getFieldError("registrationNumber")}
                                 </p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="licenseNumber">
-                                License Number
-                            </Label>
+                            <Label htmlFor="type">Vehicle Type</Label>
                             <Input
-                                id="licenseNumber"
-                                name="licenseNumber"
-                                placeholder="Enter license number"
-                                value={formData.licenseNumber}
+                                id="type"
+                                name="type"
+                                placeholder="Enter vehicle type"
+                                value={formData.type}
                                 onChange={handleInputChange}
                                 disabled={isPending}
                                 className={
-                                    getFieldError("licenseNumber")
+                                    getFieldError("type")
                                         ? "border-red-500"
                                         : ""
                                 }
                                 aria-invalid={
-                                    getFieldError("licenseNumber")
-                                        ? "true"
-                                        : "false"
+                                    getFieldError("type") ? "true" : "false"
                                 }
                             />
-                            {getFieldError("licenseNumber") && (
+                            {getFieldError("type") && (
                                 <p className="text-sm text-red-500">
-                                    {getFieldError("licenseNumber")}
+                                    {getFieldError("type")}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="capacity">Capacity</Label>
+                            <Input
+                                id="capacity"
+                                name="capacity"
+                                type="number"
+                                min="1"
+                                placeholder="Enter capacity"
+                                value={formData.capacity}
+                                onChange={handleInputChange}
+                                disabled={isPending}
+                                className={
+                                    getFieldError("capacity")
+                                        ? "border-red-500"
+                                        : ""
+                                }
+                                aria-invalid={
+                                    getFieldError("capacity") ? "true" : "false"
+                                }
+                            />
+                            {getFieldError("capacity") && (
+                                <p className="text-sm text-red-500">
+                                    {getFieldError("capacity")}
                                 </p>
                             )}
                         </div>

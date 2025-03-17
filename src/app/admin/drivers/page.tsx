@@ -63,7 +63,7 @@ export default function DriversPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     // Function to fetch requisitions
-    const fetchRequisitions = async () => {
+    const fetchDrivers = async () => {
         setIsLoading(true);
 
         try {
@@ -97,7 +97,7 @@ export default function DriversPage() {
 
     // Fetch requisitions when filters or pagination change
     useEffect(() => {
-        fetchRequisitions();
+        fetchDrivers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
@@ -148,7 +148,7 @@ export default function DriversPage() {
 
     // Handle refresh button click
     const handleRefresh = () => {
-        fetchRequisitions();
+        fetchDrivers();
     };
 
     const handleReset = () => {
@@ -431,7 +431,7 @@ export default function DriversPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            Failed to load requisitions. Please try again.
+                            Failed to load vehicles. Please try again.
                         </div>
                     )}
                 </CardContent>

@@ -4,11 +4,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Driver, DriverStatus } from "@/lib/definitions";
+import { Vehicle, VehicleStatus } from "@/lib/definitions";
 import { fetchUsersAction } from "./user-actions";
 
 // Define the filter parameters type
-export type DriverFilterParams = {
+export type VehicleFilterParams = {
     searchQuery?: string;
     statusFilter?: string;
     sortBy?: string;
@@ -17,24 +17,24 @@ export type DriverFilterParams = {
     itemsPerPage?: number;
 };
 
-export type DriverPagination = {
-    data: Driver[];
+export type VehiclePagination = {
+    data: Vehicle[];
     totalItems: number;
     totalPages: number;
     currentPage: number;
 };
 
-// Fetch drivers with filtering, sorting, and pagination
-export async function fetchDriversAction({
+// Fetch vehicles with filtering, sorting, and pagination
+export async function fetchVehiclesAction({
     searchQuery = "",
     statusFilter = "all",
     page = 1,
     itemsPerPage = 5,
     sortBy = "createdAt",
     sortDirection = "desc",
-}: DriverFilterParams): Promise<DriverPagination> {
+}: VehicleFilterParams): Promise<VehiclePagination> {
     const session = await getServerSession(authOptions);
-    const url = process.env.BACKEND_BASE_URL + "/drivers";
+    const url = process.env.BACKEND_BASE_URL + "/vehicles";
     const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -44,13 +44,13 @@ export async function fetchDriversAction({
     });
 
     if (!response.ok) {
-        throw new Error("Failed to fetch drivers");
+        throw new Error("Failed to fetch vehicles");
     }
-    const drivers: Driver[] = await response.json();
+    const vehicles: Vehicle[] = await response.json();
 
-    const filteredDrivers = drivers.filter((driver) => {
+    const filteredVehicles = vehicles.filter((vehicle) => {
         // Filter by status
-        if (statusFilter !== "all" && driver.status !== statusFilter) {
+        if (statusFilter !== "all" && vehicle.status !== statusFilter) {
             return false;
         }
 
@@ -58,25 +58,28 @@ export async function fetchDriversAction({
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             return (
-                driver?.id.toLowerCase().includes(query) ||
-                driver?.licenseNumber.toLowerCase().includes(query) ||
-                driver?.user?.name.toLowerCase().includes(query) ||
-                driver?.user?.email.toLowerCase().includes(query) ||
-                driver?.user?.contactNumber.toLowerCase().includes(query)
+                vehicle?.id.toLowerCase().includes(query) ||
+                vehicle?.registrationNumber.toLowerCase().includes(query) ||
+                vehicle?.type.toLowerCase().includes(query) ||
+                vehicle?.capacity.toString().includes(query)
             );
         }
 
         return true;
     });
 
-    filteredDrivers.sort((a, b) => {
+    filteredVehicles.sort((a, b) => {
         if (sortBy === "createdAt") {
             return sortDirection === "asc"
                 ? a.createdAt.localeCompare(b.createdAt)
                 : b.createdAt.localeCompare(a.createdAt);
+        } else if (sortBy === "capacity") {
+            return sortDirection === "asc"
+                ? a.capacity - b.capacity
+                : b.capacity - a.capacity;
         } else {
-            const aValue = String(a[sortBy as keyof Driver]).toLowerCase();
-            const bValue = String(b[sortBy as keyof Driver]).toLowerCase();
+            const aValue = String(a[sortBy as keyof Vehicle]).toLowerCase();
+            const bValue = String(b[sortBy as keyof Vehicle]).toLowerCase();
 
             return sortDirection === "asc"
                 ? aValue.localeCompare(bValue)
@@ -85,16 +88,16 @@ export async function fetchDriversAction({
     });
 
     // Calculate pagination
-    const totalItems = filteredDrivers.length;
+    const totalItems = filteredVehicles.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (page - 1) * itemsPerPage;
-    const paginatedDrivers = filteredDrivers.slice(
+    const paginatedVehicles = filteredVehicles.slice(
         startIndex,
         startIndex + itemsPerPage
     );
 
     return {
-        data: paginatedDrivers,
+        data: paginatedVehicles,
         totalItems,
         totalPages,
         currentPage: page,
@@ -102,10 +105,14 @@ export async function fetchDriversAction({
 }
 
 // Schema to validate the input
-const UpdateDriverStatusSchema = z.object({
-    driverId: z.string().min(1, "Driver ID is required"),
+const UpdateVehicleStatusSchema = z.object({
+    vehicleId: z.string().min(1, "Vehicle ID is required"),
     status: z.enum(
-        [DriverStatus.ACTIVE, DriverStatus.INACTIVE, DriverStatus.ON_LEAVE],
+        [
+            VehicleStatus.ACTIVE,
+            VehicleStatus.INACTIVE,
+            VehicleStatus.UNDER_MAINTENANCE,
+        ],
         {
             errorMap: () => ({ message: "Invalid status value" }),
         }
@@ -113,27 +120,27 @@ const UpdateDriverStatusSchema = z.object({
 });
 
 // Type for the return value
-export type UpdateDriverStatusResult = {
+export type UpdateVehicleStatusResult = {
     success: boolean;
     error?: {
         status?: string[];
-        driverId?: string[];
+        vehicleId?: string[];
     };
     message: string;
 };
 
-export async function updateDriverStatusAction(
-    prevState: UpdateDriverStatusResult,
+export async function updateVehicleStatusAction(
+    prevState: UpdateVehicleStatusResult,
     formData: FormData
-): Promise<UpdateDriverStatusResult> {
+): Promise<UpdateVehicleStatusResult> {
     try {
         // Extract values from form data
-        const driverId = formData.get("driverId") as string;
+        const vehicleId = formData.get("vehicleId") as string;
         const status = formData.get("status") as string;
 
         // Validate input
-        const validatedData = UpdateDriverStatusSchema.safeParse({
-            driverId,
+        const validatedData = UpdateVehicleStatusSchema.safeParse({
+            vehicleId,
             status,
         });
 
@@ -146,7 +153,7 @@ export async function updateDriverStatusAction(
         }
 
         const session = await getServerSession(authOptions);
-        const url = process.env.BACKEND_BASE_URL + "/drivers/" + driverId;
+        const url = process.env.BACKEND_BASE_URL + "/vehicles/" + vehicleId;
         const response = await fetch(url, {
             method: "PUT",
             headers: {
@@ -163,14 +170,14 @@ export async function updateDriverStatusAction(
         }
 
         // Revalidate related paths to update UI
-        revalidatePath("/admin/drivers");
+        revalidatePath("/admin/vehicles");
 
         return {
             success: true,
-            message: "Driver status updated successfully",
+            message: "Vehicle status updated successfully",
         };
     } catch (error) {
-        console.error("Failed to update driver status:", error);
+        console.error("Failed to update vehicle status:", error);
 
         return {
             success: false,
@@ -182,30 +189,33 @@ export async function updateDriverStatusAction(
     }
 }
 
-const AddDriverSchema = z.object({
-    email: z.string().email("Please enter a valid email address"),
-    licenseNumber: z.string().min(1, "License number is required"),
+const AddVehicleSchema = z.object({
+    registrationNumber: z.string().min(1, "Registration number is required"),
+    type: z.string().min(1, "type is required"),
+    capacity: z.number().int().min(1, "Capacity must be a positive integer"),
 });
 
-// // Add a new driver
-export type AddDriverResult = {
+// // Add a new vehicle
+export type AddVehicleResult = {
     success: boolean;
     errors?: {
-        email?: string[];
-        licenseNumber?: string[];
+        registrationNumber?: string[];
+        type?: string[];
+        capacity?: string[];
         _form?: string[];
     };
     message: string;
 };
 
-export async function AddDriverAction(
-    prevState: AddDriverResult,
+export async function AddVehicleAction(
+    prevState: AddVehicleResult,
     formData: FormData
-): Promise<AddDriverResult> {
+): Promise<AddVehicleResult> {
     // Validate form data
-    const validatedFields = AddDriverSchema.safeParse({
-        email: formData.get("email"),
-        licenseNumber: formData.get("licenseNumber"),
+    const validatedFields = AddVehicleSchema.safeParse({
+        registrationNumber: formData.get("registrationNumber") as string,
+        type: formData.get("type") as string,
+        capacity: parseInt(formData.get("capacity") as string),
     });
 
     // If validation fails, return errors
@@ -218,29 +228,17 @@ export async function AddDriverAction(
     }
 
     // Destructure validated data
-    const { email, licenseNumber } = validatedFields.data;
+    const { registrationNumber, type, capacity } = validatedFields.data;
 
     try {
-        const fetchedUsers = await fetchUsersAction({ search: email });
-        const user = fetchedUsers.users.find((user) => user.email === email);
-
-        if (!user) {
-            return {
-                errors: {
-                    email: ["User not found"],
-                },
-                success: false,
-                message: "User not found",
-            };
-        }
-
         const body = {
-            userId: user.id,
-            licenseNumber,
+            registrationNumber,
+            type,
+            capacity,
         };
 
         const session = await getServerSession(authOptions);
-        const url = process.env.BACKEND_BASE_URL + "/drivers";
+        const url = process.env.BACKEND_BASE_URL + "/vehicles";
         const res = await fetch(url, {
             method: "POST",
             headers: {
@@ -253,18 +251,18 @@ export async function AddDriverAction(
         if (!res.ok) {
             // Handle non-2xx status codes
             const data = await res.json();
-            console.error("Failed adding a new driver:", data);
+            console.error("Failed adding a new vehicle:", data);
             return {
                 errors: data.errors,
                 success: false,
-                message: data.message || "Failed adding a new driver.",
+                message: data.message || "Failed adding a new vehicle.",
             };
         }
 
         // Return success state
         return {
             success: true,
-            message: "Driver added successfully!",
+            message: "Vehicle added successfully!",
         };
     } catch (error) {
         // Generic error
@@ -273,7 +271,7 @@ export async function AddDriverAction(
                 _form: ["Something went wrong. Please try again."],
             },
             success: false,
-            message: "Failed adding a new driver.",
+            message: "Failed adding a new vehicle.",
         };
     }
 }

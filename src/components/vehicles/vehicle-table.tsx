@@ -1,4 +1,4 @@
-import { Driver, DriverStatus as Status } from "@/lib/definitions";
+import { VehicleStatus as Status, Vehicle } from "@/lib/definitions";
 import {
     Table,
     TableBody,
@@ -27,9 +27,10 @@ import {
     UpdateDriverStatusResult,
 } from "@/lib/actions/driver-actions";
 import { usePathname, useRouter } from "next/navigation";
+import { updateVehicleStatusAction } from "@/lib/actions/vehicle-actions";
 
-interface DriverTableProps {
-    drivers: Driver[];
+interface VehicleTableProps {
+    vehicles: Vehicle[];
     handleRefresh: () => void;
 }
 
@@ -53,13 +54,13 @@ const getStatusBadge = (status: string) => {
                     Active
                 </Badge>
             );
-        case Status.ON_LEAVE:
+        case Status.UNDER_MAINTENANCE:
             return (
                 <Badge
                     variant="outline"
                     className="bg-red-100 text-red-800 hover:bg-red-100"
                 >
-                    On Leave
+                    Under Maintenance
                 </Badge>
             );
         default:
@@ -73,20 +74,22 @@ const initialState: UpdateDriverStatusResult = {
     message: "",
 };
 
-export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
+export function VehicleTable({ vehicles, handleRefresh }: VehicleTableProps) {
     const router = useRouter();
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-    const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(
+        null
+    );
 
     const [formState, formAction, pending] = useActionState(
-        updateDriverStatusAction,
+        updateVehicleStatusAction,
         initialState
     );
 
     useEffect(() => {
         if (formState?.success) {
             toast.success("Success", {
-                description: "Driver status has been updated successfully.",
+                description: "Vehicle status has been updated successfully.",
             });
             setStatusDialogOpen(false);
             handleRefresh();
@@ -103,45 +106,44 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                 <TableHeader>
                     <TableRow>
                         <TableHead>ID</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>License</TableHead>
+                        <TableHead>Registration No.</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Capacity</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {drivers.length === 0 ? (
+                    {vehicles.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={6} className="h-24 text-center">
                                 No drivers found.
                             </TableCell>
                         </TableRow>
                     ) : (
-                        drivers.map((driver) => (
-                            <TableRow key={driver.id}>
+                        vehicles.map((vehicle) => (
+                            <TableRow key={vehicle.id}>
                                 <TableCell className="font-medium">
-                                    {driver.id}
+                                    {vehicle.id}
                                 </TableCell>
-                                <TableCell>{driver?.user?.name}</TableCell>
-                                <TableCell>{driver?.user?.email}</TableCell>
                                 <TableCell>
-                                    {driver?.user?.contactNumber}
+                                    {vehicle?.registrationNumber}
                                 </TableCell>
-                                <TableCell>{driver.licenseNumber}</TableCell>
+                                <TableCell>{vehicle?.type}</TableCell>
+                                <TableCell>{vehicle?.capacity}</TableCell>
                                 <TableCell>
-                                    {getStatusBadge(driver.status)}
+                                    {getStatusBadge(vehicle.status)}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Dialog
                                         open={
                                             statusDialogOpen &&
-                                            selectedDriver?.id === driver.id
+                                            selectedVehicle?.id === vehicle.id
                                         }
                                         onOpenChange={(open) => {
                                             setStatusDialogOpen(open);
-                                            if (open) setSelectedDriver(driver);
+                                            if (open)
+                                                setSelectedVehicle(vehicle);
                                         }}
                                     >
                                         <DialogTrigger asChild>
@@ -155,8 +157,7 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                                                     Update Driver Status
                                                 </DialogTitle>
                                                 <DialogDescription>
-                                                    Change the status of{" "}
-                                                    {selectedDriver?.user?.name}
+                                                    Change the status of vehicle
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <form
@@ -164,12 +165,12 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                                                 className="space-y-4 py-2"
                                             >
                                                 <div className="space-y-2">
-                                                    {/* hidden input field for driverid */}
+                                                    {/* hidden input field for Vechileid */}
                                                     <input
                                                         type="hidden"
-                                                        name="driverId"
+                                                        name="vehicleId"
                                                         value={
-                                                            selectedDriver?.id
+                                                            selectedVehicle?.id
                                                         }
                                                     />
                                                     <Label htmlFor="status">
@@ -179,18 +180,30 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                                                         id="status"
                                                         name="status"
                                                         defaultValue={
-                                                            selectedDriver?.status
+                                                            selectedVehicle?.status
                                                         }
                                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        <option value="ACTIVE">
+                                                        <option
+                                                            value={
+                                                                Status.ACTIVE
+                                                            }
+                                                        >
                                                             Active
                                                         </option>
-                                                        <option value="INACTIVE">
+                                                        <option
+                                                            value={
+                                                                Status.INACTIVE
+                                                            }
+                                                        >
                                                             Inactive
                                                         </option>
-                                                        <option value="ON_LEAVE">
-                                                            On Leave
+                                                        <option
+                                                            value={
+                                                                Status.UNDER_MAINTENANCE
+                                                            }
+                                                        >
+                                                            Under Maintenance
                                                         </option>
                                                     </select>
                                                 </div>
