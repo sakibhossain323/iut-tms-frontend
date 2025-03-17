@@ -54,15 +54,15 @@ export enum DriverStatus {
 
 export interface Driver {
     id: string;
-    name: string;
     licenseNumber: string;
-    licenseType: string;
-    contact: string;
-    email: string;
-    experience: string;
     status: DriverStatus;
-    userId?: string;
     createdAt: string;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        contactNumber: string;
+    };
 }
 
 export function getReqStat(status: string) {

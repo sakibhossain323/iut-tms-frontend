@@ -232,6 +232,12 @@ export default function RequisitionsPage() {
                                     <SelectItem value="createdAt-asc">
                                         Oldest First
                                     </SelectItem>
+                                    <SelectItem value="name-asc">
+                                        Name (A-Z)
+                                    </SelectItem>
+                                    <SelectItem value="name-desc">
+                                        Name (Z-A)
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                             <Select

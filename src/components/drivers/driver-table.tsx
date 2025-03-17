@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Driver, DriverStatus as Status } from "@/lib/definitions";
 import {
     Table,
@@ -9,9 +8,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { memo, useState, useTransition } from "react";
+import { useActionState, useEffect, useOptimistic, useState } from "react";
+
 import {
     Dialog,
     DialogContent,
@@ -22,8 +21,12 @@ import {
     DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
-import { toast } from "sonner";
-import { updateDriverStatusAction } from "@/lib/actions/driver-actions";
+import { toast, Toaster } from "sonner";
+import {
+    updateDriverStatusAction,
+    UpdateDriverStatusResult,
+} from "@/lib/actions/driver-actions";
+import { usePathname, useRouter } from "next/navigation";
 
 interface DriverTableProps {
     drivers: Driver[];
@@ -63,142 +66,155 @@ const getStatusBadge = (status: string) => {
     }
 };
 
+const initialState: UpdateDriverStatusResult = {
+    success: false,
+    error: {},
+    message: "",
+};
+
 export function DriverTable({ drivers }: DriverTableProps) {
+    const router = useRouter();
+    const pathname = usePathname();
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
     const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-    const [isPending, startTransition] = useTransition();
 
-    // Handle status update
-    const handleStatusUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedDriver) return;
+    const [formState, formAction, pending] = useActionState(
+        updateDriverStatusAction,
+        initialState
+    );
 
-        const formData = new FormData(e.currentTarget);
-        formData.append("driverId", selectedDriver.id);
+    useEffect(() => {
+        if (formState?.success) {
+            toast.success("Success", {
+                description: "Driver status has been updated successfully.",
+            });
+            setStatusDialogOpen(false);
 
-        startTransition(async () => {
-            try {
-                const result = await updateDriverStatusAction(formData);
+            setTimeout(() => {
+                router.push(pathname + "/");
+            }, 1500);
+        } else if (formState?.message && !formState.success) {
+            toast.error("Submission failed", {
+                description: formState.message,
+            });
+        }
+    }, [formState, router]);
 
-                if (result.success) {
-                    toast.success("Driver status updated successfully");
-                    setStatusDialogOpen(false);
-                } else {
-                    toast.error(
-                        result.error?.message ||
-                            "Failed to update driver status"
-                    );
-                }
-            } catch (error) {
-                toast.error("An error occurred while updating driver status");
-            }
-        });
-    };
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>License</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {drivers.length === 0 ? (
+        <>
+            <Table>
+                <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
-                            No drivers found.
-                        </TableCell>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>License</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                ) : (
-                    drivers.map((driver) => (
-                        <TableRow key={driver.id}>
-                            <TableCell className="font-medium">
-                                {driver.id.substring(0, 8)}
-                                ...
-                            </TableCell>
-                            <TableCell>{driver.name}</TableCell>
-                            <TableCell>
-                                {driver.licenseNumber} ({driver.licenseType})
-                            </TableCell>
-                            <TableCell>{driver.contact}</TableCell>
-                            <TableCell>
-                                {getStatusBadge(driver.status)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Dialog
-                                    open={
-                                        statusDialogOpen &&
-                                        selectedDriver?.id === driver.id
-                                    }
-                                    onOpenChange={(open) => {
-                                        setStatusDialogOpen(open);
-                                        if (open) setSelectedDriver(driver);
-                                    }}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" size="sm">
-                                            Update Status
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                Update Driver Status
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                                Change the status of{" "}
-                                                {selectedDriver?.name}
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <form
-                                            onSubmit={handleStatusUpdate}
-                                            className="space-y-4 py-2"
-                                        >
-                                            <div className="space-y-2">
-                                                <Label htmlFor="status">
-                                                    Status
-                                                </Label>
-                                                <select
-                                                    id="status"
-                                                    name="status"
-                                                    defaultValue={
-                                                        selectedDriver?.status
-                                                    }
-                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                                >
-                                                    <option value="ACTIVE">
-                                                        Active
-                                                    </option>
-                                                    <option value="INACTIVE">
-                                                        Inactive
-                                                    </option>
-                                                    <option value="ON_LEAVE">
-                                                        On Leave
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <DialogFooter>
-                                                <Button
-                                                    type="submit"
-                                                    disabled={isPending}
-                                                >
-                                                    {isPending
-                                                        ? "Updating..."
-                                                        : "Save Changes"}
-                                                </Button>
-                                            </DialogFooter>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
+                </TableHeader>
+                <TableBody>
+                    {drivers.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="h-24 text-center">
+                                No drivers found.
                             </TableCell>
                         </TableRow>
-                    ))
-                )}
-            </TableBody>
-        </Table>
+                    ) : (
+                        drivers.map((driver) => (
+                            <TableRow key={driver.id}>
+                                <TableCell className="font-medium">
+                                    {driver.id}
+                                </TableCell>
+                                <TableCell>{driver?.user?.name}</TableCell>
+                                <TableCell>{driver.licenseNumber}</TableCell>
+                                <TableCell>
+                                    {driver?.user?.contactNumber}
+                                </TableCell>
+                                <TableCell>
+                                    {getStatusBadge(driver.status)}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Dialog
+                                        open={
+                                            statusDialogOpen &&
+                                            selectedDriver?.id === driver.id
+                                        }
+                                        onOpenChange={(open) => {
+                                            setStatusDialogOpen(open);
+                                            if (open) setSelectedDriver(driver);
+                                        }}
+                                    >
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                Update Status
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[425px]">
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Update Driver Status
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Change the status of{" "}
+                                                    {selectedDriver?.user?.name}
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <form
+                                                action={formAction}
+                                                className="space-y-4 py-2"
+                                            >
+                                                <div className="space-y-2">
+                                                    {/* hidden input field for driverid */}
+                                                    <input
+                                                        type="hidden"
+                                                        name="driverId"
+                                                        value={
+                                                            selectedDriver?.id
+                                                        }
+                                                    />
+                                                    <Label htmlFor="status">
+                                                        Status
+                                                    </Label>
+                                                    <select
+                                                        id="status"
+                                                        name="status"
+                                                        defaultValue={
+                                                            selectedDriver?.status
+                                                        }
+                                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        <option value="ACTIVE">
+                                                            Active
+                                                        </option>
+                                                        <option value="INACTIVE">
+                                                            Inactive
+                                                        </option>
+                                                        <option value="ON_LEAVE">
+                                                            On Leave
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button
+                                                        type="submit"
+                                                        disabled={pending}
+                                                    >
+                                                        {pending
+                                                            ? "Updating..."
+                                                            : "Save Changes"}
+                                                    </Button>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Dialog>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+            <Toaster position="bottom-right" richColors />
+        </>
     );
 }
