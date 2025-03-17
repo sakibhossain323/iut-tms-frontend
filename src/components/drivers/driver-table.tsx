@@ -30,6 +30,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 interface DriverTableProps {
     drivers: Driver[];
+    handleRefresh: () => void;
 }
 
 const getStatusBadge = (status: string) => {
@@ -72,7 +73,7 @@ const initialState: UpdateDriverStatusResult = {
     message: "",
 };
 
-export function DriverTable({ drivers }: DriverTableProps) {
+export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
@@ -89,7 +90,7 @@ export function DriverTable({ drivers }: DriverTableProps) {
                 description: "Driver status has been updated successfully.",
             });
             setStatusDialogOpen(false);
-
+            handleRefresh();
             setTimeout(() => {
                 router.push(pathname + "/");
             }, 1500);

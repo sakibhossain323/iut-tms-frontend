@@ -159,7 +159,7 @@ export default function RequisitionsPage() {
         setSortBy("createdAt");
         setSortDirection("desc");
         setCurrentPage(1);
-        setItemsPerPage(10);
+        setItemsPerPage(5);
     };
 
     return (
@@ -274,7 +274,10 @@ export default function RequisitionsPage() {
                         <DriverTableSkeleton />
                     ) : driversData ? (
                         <>
-                            <DriverTable drivers={driversData.data} />
+                            <DriverTable
+                                drivers={driversData.data}
+                                handleRefresh={handleRefresh}
+                            />
 
                             {/* Pagination controls */}
                             <div className="mt-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
