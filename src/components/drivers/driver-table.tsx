@@ -91,9 +91,6 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
             });
             setStatusDialogOpen(false);
             handleRefresh();
-            setTimeout(() => {
-                router.push(pathname + "/");
-            }, 1500);
         } else if (formState?.message && !formState.success) {
             toast.error("Submission failed", {
                 description: formState.message,
@@ -108,8 +105,9 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                     <TableRow>
                         <TableHead>ID</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>License</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>Contact</TableHead>
+                        <TableHead>License</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -128,10 +126,11 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                                     {driver.id}
                                 </TableCell>
                                 <TableCell>{driver?.user?.name}</TableCell>
-                                <TableCell>{driver.licenseNumber}</TableCell>
+                                <TableCell>{driver?.user?.email}</TableCell>
                                 <TableCell>
                                     {driver?.user?.contactNumber}
                                 </TableCell>
+                                <TableCell>{driver.licenseNumber}</TableCell>
                                 <TableCell>
                                     {getStatusBadge(driver.status)}
                                 </TableCell>
@@ -197,6 +196,18 @@ export function DriverTable({ drivers, handleRefresh }: DriverTableProps) {
                                                     </select>
                                                 </div>
                                                 <DialogFooter>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            setStatusDialogOpen(
+                                                                false
+                                                            )
+                                                        }
+                                                        disabled={pending}
+                                                    >
+                                                        Cancel
+                                                    </Button>
                                                     <Button
                                                         type="submit"
                                                         disabled={pending}

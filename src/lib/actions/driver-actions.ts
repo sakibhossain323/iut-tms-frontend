@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Driver, DriverStatus } from "@/lib/definitions";
 import { searchUsers } from "@/lib/data/mock-data";
+import { fetchUsersAction } from "./user-actions";
 
 // Define the filter parameters type
 export type DriverFilterParams = {
@@ -182,93 +183,98 @@ export async function updateDriverStatusAction(
     }
 }
 
+const AddDriverSchema = z.object({
+    email: z.string().email("Please enter a valid email address"),
+    licenseNumber: z.string().min(1, "License number is required"),
+});
+
 // // Add a new driver
-// export async function addDriverAction(formData: FormData) {
-//     try {
-//         const name = formData.get("name") as string;
-//         const licenseNumber = formData.get("licenseNumber") as string;
-//         const licenseType = formData.get("licenseType") as string;
-//         const contact = formData.get("contact") as string;
-//         const email = formData.get("email") as string;
-//         const experience = formData.get("experience") as string;
-//         const status = formData.get("status") as DriverStatus;
-//         const userId = (formData.get("userId") as string) || undefined;
+export type AddDriverResult = {
+    success: boolean;
+    errors?: {
+        email?: string[];
+        licenseNumber?: string[];
+        _form?: string[];
+    };
+    message: string;
+};
 
-//         // Validate required fields
-//         const errors: Record<string, string> = {};
+export async function AddDriverAction(
+    prevState: AddDriverResult,
+    formData: FormData
+): Promise<AddDriverResult> {
+    // Validate form data
+    const validatedFields = AddDriverSchema.safeParse({
+        email: formData.get("email"),
+        licenseNumber: formData.get("licenseNumber"),
+    });
 
-//         if (!name) errors.name = "Name is required";
-//         if (!licenseNumber) errors.licenseNumber = "License number is required";
-//         if (!licenseType) errors.licenseType = "License type is required";
-//         if (!contact) errors.contact = "Contact number is required";
-//         if (!email) errors.email = "Email is required";
-//         if (!experience) errors.experience = "Experience is required";
-//         if (!status || !["ACTIVE", "INACTIVE", "ON_LEAVE"].includes(status)) {
-//             errors.status = "Please select a valid status";
-//         }
+    // If validation fails, return errors
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            success: false,
+            message: "Please correct the errors in the form.",
+        };
+    }
 
-//         if (Object.keys(errors).length > 0) {
-//             return {
-//                 success: false,
-//                 error: errors,
-//             };
-//         }
+    // Destructure validated data
+    const { email, licenseNumber } = validatedFields.data;
 
-//         // Simulate network delay
-//         await new Promise((resolve) => setTimeout(resolve, 500));
-
-//         const newDriver = addDriver({
-//             name,
-//             licenseNumber,
-//             licenseType,
-//             contact,
-//             email,
-//             experience,
-//             status,
-//             userId,
-//             createdAt: new Date().toISOString(),
-//         });
-
-//         revalidatePath("/drivers");
-
-//         return {
-//             success: true,
-//             driver: newDriver,
-//         };
-//     } catch (error) {
-//         console.error("Error adding driver:", error);
-//         return {
-//             success: false,
-//             error: { message: "Failed to add driver" },
-//         };
-//     }
-// }
-
-// Search users for driver assignment
-export async function searchUsersAction(search: string) {
     try {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        const fetchedUsers = await fetchUsersAction({ search: email });
+        const user = fetchedUsers.users.find((user) => user.email === email);
 
-        if (!search || search.length < 2) {
+        if (!user) {
             return {
-                success: true,
-                users: [],
+                errors: {
+                    email: ["User not found"],
+                },
+                success: false,
+                message: "User not found",
             };
         }
 
-        const users = searchUsers(search);
+        const body = {
+            userId: user.id,
+            licenseNumber,
+        };
 
+        const session = await getServerSession(authOptions);
+        const url = process.env.BACKEND_BASE_URL + "/drivers";
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+            // Handle non-2xx status codes
+            const data = await res.json();
+            console.error("Failed adding a new driver:", data);
+            return {
+                errors: data.errors,
+                success: false,
+                message: data.message || "Failed adding a new driver.",
+            };
+        }
+
+        // Return success state
         return {
             success: true,
-            users,
+            message: "Driver added successfully!",
         };
     } catch (error) {
-        console.error("Error searching users:", error);
+        // Generic error
         return {
+            errors: {
+                _form: ["Something went wrong. Please try again."],
+            },
             success: false,
-            error: "Failed to search users",
-            users: [],
+            message: "Failed adding a new driver.",
         };
     }
 }

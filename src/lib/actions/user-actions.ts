@@ -32,8 +32,6 @@ export async function fetchUsersAction(
         sortDirection = "desc",
     } = params;
 
-    console.log("Fetching users with params:", params);
-
     // Add artificial delay to simulate network request
     const session = await getServerSession(authOptions);
     const url = process.env.BACKEND_BASE_URL + "/users";
@@ -69,8 +67,6 @@ export async function fetchUsersAction(
 
         return true;
     });
-
-    console.log("Filtered users:", filteredUsers);
 
     // Sort users
     filteredUsers.sort((a, b) => {

@@ -29,6 +29,7 @@ import {
 } from "@/lib/actions/driver-actions";
 import { DriverTable } from "@/components/drivers/driver-table";
 import { DriverTableSkeleton } from "@/components/drivers/driver-table-skeleton";
+import AddDriverDialog from "@/components/drivers/add-driver-dialog";
 
 export default function RequisitionsPage() {
     const router = useRouter();
@@ -172,9 +173,7 @@ export default function RequisitionsPage() {
                     <Button variant="outline" onClick={handleReset}>
                         Reset Filters
                     </Button>
-                    <Button asChild>
-                        <Link href={`${pathname}/new`}>Add Driver</Link>
-                    </Button>
+                    <AddDriverDialog handleRefresh={handleRefresh} />
                 </div>
             </div>
 
@@ -190,7 +189,7 @@ export default function RequisitionsPage() {
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <div className="relative">
                                 <Input
-                                    placeholder="Search requisitions..."
+                                    placeholder="Search drivers..."
                                     value={searchQuery}
                                     onChange={handleSearchChange}
                                     className="w-full sm:w-[200px]"
