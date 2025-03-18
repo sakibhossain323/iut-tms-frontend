@@ -22,8 +22,9 @@ import { getRequisitionData } from "@/lib/data/requisition-data";
 import { format } from "date-fns/format";
 import { RequisitionDetailWrapper } from "@/components/requisitions/requisition-detail/requisition-detail-wrapper";
 import AssignmentInfoCard from "@/components/requisitions/requisition-detail/assignment-info-card";
-import { RequisitionStatus as Status } from "@/lib/definitions";
+import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
 import { Badge } from "@/components/ui/badge";
+import { ActivityLogCard } from "@/components/requisitions/requisition-detail/activity-log-card";
 
 const getStatusBadge = (status: Status) => {
     switch (status) {
@@ -70,7 +71,7 @@ export default async function RequisitionDetailPage({
     const requisitionId = (await params).id;
 
     // Fetch requisition data
-    const requisition = await getRequisitionData(requisitionId);
+    const requisition: Requisition = await getRequisitionData(requisitionId);
 
     const {
         id,
@@ -85,6 +86,7 @@ export default async function RequisitionDetailPage({
         notes,
         createdAt,
         user,
+        approvals,
     } = requisition;
 
     const { name, designation, email, department } = user;
@@ -254,6 +256,11 @@ export default async function RequisitionDetailPage({
                     </Card>
 
                     {/* Client components for vehicle, status, and activity log */}
+                    <ActivityLogCard
+                        createdAt={createdAt}
+                        approvals={approvals}
+                        vehicle={vehicle}
+                    />
                     {/* <RequisitionDetailWrapper requisition={requisition} /> */}
                     <AssignmentInfoCard
                         requisitionId={id}

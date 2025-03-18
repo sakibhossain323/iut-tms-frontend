@@ -290,3 +290,71 @@ export async function assignVehicleDriverAction(
         };
     }
 }
+
+const UpdateStatusFormSchema = z.object({
+    approvalId: z.string().min(1, "Approval ID is required"),
+    status: z.enum(["APPROVED", "REJECTED"]),
+});
+export type UpdateStatusFormState = {
+    success: boolean;
+    message: string;
+    errors?: {
+        status?: string[];
+        _form?: string[];
+    };
+};
+
+export async function updateStatusAction(
+    prevState: UpdateStatusFormState,
+    formData: FormData
+): Promise<UpdateStatusFormState> {
+    const validatedFields = UpdateStatusFormSchema.safeParse({
+        status: formData.get("status"),
+        approvalId: formData.get("approvalId"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            success: false,
+            message: "Please correct the errors in the form.",
+        };
+    }
+
+    const { approvalId, status } = validatedFields.data;
+
+    try {
+        const session = await getServerSession(authOptions);
+        const url = `${process.env.BACKEND_BASE_URL}/approvals/${approvalId}/process`;
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+            body: JSON.stringify({ status }),
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            return {
+                success: false,
+                message: data?.message || "Failed to update status",
+            };
+        }
+
+        revalidatePath("/");
+        return {
+            success: true,
+            message: "Status updated successfully.",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred",
+        };
+    }
+}

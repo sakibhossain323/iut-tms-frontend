@@ -3,6 +3,18 @@ export type State = {
     errors?: Record<string, string[]>;
 };
 
+export type Approval = {
+    id: string;
+    requisitionId: string;
+    approverUserId: string;
+    approverRole: Role;
+    approvalStatus: RequisitionStatus;
+    approvalDate: string;
+    comments: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export enum RequisitionStatus {
     PENDING = "PENDING",
     APPROVED = "APPROVED",
@@ -21,14 +33,18 @@ export type Requisition = {
     driver: Driver | null;
     placeToPickup: string;
     placesToVisit: string;
+    notes?: string;
     user: {
         id: string;
         name: string;
         email: string;
         designation: string;
         role: string;
+        department?: string;
+        contactNumber: string;
     };
     createdAt: string;
+    approvals: Approval[];
 };
 
 export enum Role {
