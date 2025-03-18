@@ -11,20 +11,21 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/auth/login", req.url));
     }
 
+    const role = token?.role;
     const isAdminRoute = pathname.startsWith("/admin");
-    if (token?.role === Role.ADMIN && !isAdminRoute)
+    if (role === Role.ADMIN && !isAdminRoute)
         return NextResponse.redirect(new URL("/admin", req.url));
 
     const isOfficerRoute = pathname.startsWith("/officer");
-    if (token?.role === Role.TRANSPORT_OFFICER && !isOfficerRoute)
+    if (role === Role.TRANSPORT_OFFICER && !isOfficerRoute)
         return NextResponse.redirect(new URL("/officer", req.url));
 
     const isHodRoute = pathname.startsWith("/hod");
-    if (token?.role === Role.HOD && !isOfficerRoute)
+    if (role === Role.HOD && !isOfficerRoute)
         return NextResponse.redirect(new URL("/hod", req.url));
 
     if (
-        token?.role === Role.USER &&
+        (role === Role.USER || role === Role.DRIVER) &&
         (isAdminRoute || isOfficerRoute || isHodRoute)
     )
         return NextResponse.redirect(new URL("/", req.url));
