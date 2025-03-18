@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 
-export default function AdminDashboardLayout({
+export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -9,49 +9,31 @@ export default function AdminDashboardLayout({
         {
             title: "Dashboard",
             icon: "home",
-            href: "/admin",
+            href: "/dashboard",
             variant: "default" as const,
         },
         {
             title: "Trips",
             icon: "calendar",
-            href: "/admin/trips",
+            href: "/dashboard/trips",
             variant: "default" as const,
         },
         {
             title: "Requisitions",
             icon: "fileText",
-            href: "/admin/requisitions",
+            href: "/dashboard/requisitions",
             variant: "default" as const,
         },
         {
             title: "Subscriptions",
             icon: "users",
-            href: "/admin/subscriptions",
+            href: "/dashboard/subscriptions",
             variant: "default" as const,
         },
         {
             title: "One-Time Tickets",
             icon: "ticket",
-            href: "/admin/tickets",
-            variant: "default" as const,
-        },
-        {
-            title: "Vehicles",
-            icon: "car",
-            href: "/admin/vehicles",
-            variant: "default" as const,
-        },
-        {
-            title: "Drivers",
-            icon: "contact",
-            href: "/admin/drivers",
-            variant: "default" as const,
-        },
-        {
-            title: "System Users",
-            icon: "userCog",
-            href: "/admin/users",
+            href: "/dashboard/tickets",
             variant: "default" as const,
         },
     ];
