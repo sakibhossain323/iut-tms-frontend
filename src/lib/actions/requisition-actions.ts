@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Requisition } from "@/lib/definitions";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 // Define the requisition form schema using Zod
 const requisitionSchema = z.object({
@@ -213,4 +215,78 @@ export async function fetchRequisitionsAction({
         totalPages,
         currentPage: page,
     };
+}
+
+const assignVehiclDriverSchema = z.object({
+    requisitionId: z.string().min(1, "Requisition is required"),
+    vehicleId: z.string().min(1, "Vehicle is required"),
+    driverId: z.string().min(1, "Driver is required"),
+});
+
+export type AssignVehicleDriverFormState = {
+    errors?: {
+        requisitionId?: string[];
+        vehicleId?: string[];
+        driverId?: string[];
+        _form?: string[];
+    };
+    success: boolean;
+    message: string;
+};
+export async function assignVehicleDriverAction(
+    prevState: AssignVehicleDriverFormState,
+    formData: FormData
+): Promise<AssignVehicleDriverFormState> {
+    try {
+        const validatedFields = assignVehiclDriverSchema.safeParse({
+            requisitionId: formData.get("requisitionId"),
+            vehicleId: formData.get("vehicleId"),
+            driverId: formData.get("driverId"),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                errors: validatedFields.error.flatten().fieldErrors,
+                success: false,
+                message: "Please correct the errors in the form.",
+            };
+        }
+
+        // Destructure validated data
+        const { requisitionId, vehicleId, driverId } = validatedFields.data;
+        const session = await getServerSession(authOptions);
+        const url =
+            process.env.BACKEND_BASE_URL +
+            `/requisitions/${requisitionId}/assign`;
+
+        const body = JSON.stringify({ vehicleId, driverId });
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+            body,
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            return {
+                success: false,
+                message: data?.message || "Failed to assign vehicle and driver",
+            };
+        }
+        revalidatePath("/");
+        return {
+            success: true,
+            message: "Vehicle and driver assigned successfully.",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred",
+        };
+    }
 }

@@ -3,7 +3,7 @@ export const vehicles = [
         id: "BUS-101",
         type: "Bus",
         capacity: 45,
-        licensePlate: "XYZ-1234",
+        registrationNumber: "XYZ-1234",
         status: "available",
         currentAssignment: "None",
     },

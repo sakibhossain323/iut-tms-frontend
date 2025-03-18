@@ -17,7 +17,10 @@ export type Requisition = {
     dateTimeRequired: string;
     numberOfPassengers: number;
     status: RequisitionStatus;
-    assignedVehicle: string | null;
+    vehicle: Vehicle | null;
+    driver: Driver | null;
+    placeToPickup: string;
+    placesToVisit: string;
     user: {
         id: string;
         name: string;
