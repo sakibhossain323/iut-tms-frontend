@@ -1,5 +1,4 @@
 import {
-    ArrowLeft,
     Calendar,
     Clock,
     Users,
@@ -15,7 +14,6 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { headers } from "next/headers";
 import { getRequisitionData } from "@/lib/data/requisition-data";
 import { format } from "date-fns/format";
 import AssignmentInfoCard from "@/components/requisitions/requisition-detail/assignment-info-card";

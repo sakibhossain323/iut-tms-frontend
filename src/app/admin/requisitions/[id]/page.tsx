@@ -1,6 +1,4 @@
-import Link from "next/link";
 import {
-    ArrowLeft,
     Calendar,
     Clock,
     Users,
@@ -8,7 +6,6 @@ import {
     Building,
     UserRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -17,10 +14,8 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { headers } from "next/headers";
 import { getRequisitionData } from "@/lib/data/requisition-data";
 import { format } from "date-fns/format";
-import { RequisitionDetailWrapper } from "@/components/requisitions/requisition-detail/requisition-detail-wrapper";
 import AssignmentInfoCard from "@/components/requisitions/requisition-detail/assignment-info-card";
 import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
 import { Badge } from "@/components/ui/badge";

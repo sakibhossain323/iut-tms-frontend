@@ -27,8 +27,6 @@ export async function ActivityLogCard({
     approvals,
     vehicle,
 }: ActivityLogCardProps) {
-    // Function to get the appropriate color for the activity type
-    console.log(approvals);
     // find first approval by HOD and Transport Officer
     const byHOD = approvals.find(
         (approval) => approval?.approverRole === Role.HOD
