@@ -1,54 +1,269 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getReqStat, Requisition } from "@/lib/definitions";
-import RequisitionDetails from "@/components/requisitions/RequisitionDetails";
-import Link from "next/link";
-import StatusDialog from "@/components/requisitions/StatusDialog";
-import { Button } from "@/components/ui/button";
+import {
+    ArrowLeft,
+    Calendar,
+    Clock,
+    Users,
+    Briefcase,
+    Building,
+    UserRound,
+} from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { headers } from "next/headers";
+import { getRequisitionData } from "@/lib/data/requisition-data";
+import { format } from "date-fns/format";
+import AssignmentInfoCard from "@/components/requisitions/requisition-detail/assignment-info-card";
+import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
+import { Badge } from "@/components/ui/badge";
+import { ActivityLogCard } from "@/components/requisitions/requisition-detail/activity-log-card";
 
-export default async function Page({
+const getStatusBadge = (status: Status) => {
+    switch (status) {
+        case Status.PENDING:
+            return (
+                <Badge
+                    variant="outline"
+                    className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                >
+                    Pending
+                </Badge>
+            );
+        case Status.APPROVED:
+            return (
+                <Badge
+                    variant="outline"
+                    className="bg-green-100 text-green-800 hover:bg-green-100"
+                >
+                    Approved
+                </Badge>
+            );
+        case Status.REJECTED:
+            return (
+                <Badge
+                    variant="outline"
+                    className="bg-red-100 text-red-800 hover:bg-red-100"
+                >
+                    Rejected
+                </Badge>
+            );
+        default:
+            return <Badge variant="outline">{status}</Badge>;
+    }
+};
+
+export default async function RequisitionDetailPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: { [key: string]: string | string[] | undefined };
 }) {
-    const id = (await params).id;
-    const session = await getServerSession(authOptions);
-    const res = await fetch(
-        process.env.BACKEND_BASE_URL + "/requisitions/" + id,
-        {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${session?.accessToken}`,
-            },
-        }
-    );
+    // Get requisition ID from URL or use default
+    const requisitionId = (await params).id;
 
-    if (!res.ok) {
-        return <div>Failed to fetch data</div>;
-    }
+    // Fetch requisition data
+    const requisition: Requisition = await getRequisitionData(requisitionId);
 
-    const requisition: Requisition = await res.json();
-    const statusColor = getReqStat(requisition.status).color;
-    const statusLabel = getReqStat(requisition.status).label;
+    const {
+        id,
+        purpose,
+        dateTimeRequired,
+        numberOfPassengers,
+        placeToPickup,
+        placesToVisit,
+        status,
+        vehicle,
+        driver,
+        notes,
+        createdAt,
+        user,
+        approvals,
+    } = requisition;
+
+    const { name, designation, email, department } = user;
 
     return (
-        <div className="w-full p-2">
-            <div className="flex w-full items-center justify-between">
-                <h1 className="text-2xl font-semibold font-mono">
-                    Requisition Details
-                </h1>
+        <div className="flex-1 space-y-4 p-8 pt-6">
+            {/* Header with navigation and status */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold tracking-tight">
+                    Requisition #{id}
+                </h2>
+                {getStatusBadge(status)}
             </div>
-            <div className="mt-8">
-                <div className="mb-4 text-lg font-semibold">
-                    <span className={statusColor}>{statusLabel}</span>
-                </div>
-                <RequisitionDetails requisition={requisition} />
-                <div className="flex justify-start gap-4 mt-4">
-                    <Button size="lg" variant="outline" asChild>
-                        <Link href="/dashboard/requisitions">Back</Link>
-                    </Button>
-                    <StatusDialog requisition={requisition} />
+
+            {/* Requistion Status Badge */}
+            <div className="absolute top-8 right-8"></div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+                {/* Requisition Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Requisition Information</CardTitle>
+                        <CardDescription>
+                            Details of the requisition request
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center">
+                            <Briefcase className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-medium">Purpose</p>
+                                <p className="text-lg">{purpose || "--"}</p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-center">
+                            <Calendar className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Pickup Date
+                                </p>
+                                <p className="text-lg">
+                                    {format(
+                                        new Date(dateTimeRequired),
+                                        "MMM dd, yyyy"
+                                    ) || "--"}
+                                </p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-center">
+                            <Clock className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Pickup Time
+                                </p>
+                                <p className="text-lg">
+                                    {format(
+                                        new Date(dateTimeRequired),
+                                        "hh:mm a"
+                                    ) || "--"}
+                                </p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-center">
+                            <Users className="h-5 w-5 mr-2 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Number of Passengers
+                                </p>
+                                <p className="text-lg">
+                                    {numberOfPassengers || "--"}
+                                </p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-start">
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Pickup Location
+                                </p>
+                                <p className="text-lg">{placeToPickup}</p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-start">
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Destination
+                                </p>
+                                <p className="text-lg">{placesToVisit}</p>
+                            </div>
+                        </div>
+                        <Separator />
+
+                        <div className="flex items-start">
+                            <div>
+                                <p className="text-sm font-medium">
+                                    Additional Notes
+                                </p>
+                                <p className="text-lg">
+                                    {requisition.notes || "--"}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Requester Information and Client Components */}
+                <div className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Requester Information</CardTitle>
+                            <CardDescription>
+                                Details of the person who made the request
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center">
+                                <UserRound className="h-5 w-5 mr-2 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Requested by
+                                    </p>
+                                    <p className="text-sm">
+                                        {name || "--"}, {designation || " --"}{" "}
+                                        <br />
+                                        {email || "--"}
+                                    </p>
+                                </div>
+                            </div>
+                            <Separator />
+
+                            <div className="flex items-center">
+                                <Building className="h-5 w-5 mr-2 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Department
+                                    </p>
+                                    <p className="text-lg">
+                                        {department || "--"}
+                                    </p>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center">
+                                <Calendar className="h-5 w-5 mr-2 text-muted-foreground" />
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Request Date
+                                    </p>
+                                    <p className="text-lg">
+                                        {format(
+                                            new Date(createdAt),
+                                            "hh:mm a; MMM dd, yyyy"
+                                        ) || "--"}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Client components for vehicle, status, and activity log */}
+                    <ActivityLogCard
+                        createdAt={createdAt}
+                        approvals={approvals}
+                        vehicle={vehicle}
+                    />
+                    {/* <RequisitionDetailWrapper requisition={requisition} /> */}
+                    <AssignmentInfoCard
+                        requisitionId={id}
+                        vehicle={vehicle}
+                        driver={driver}
+                    />
                 </div>
             </div>
         </div>

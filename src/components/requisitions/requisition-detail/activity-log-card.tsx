@@ -9,6 +9,8 @@ import {
 import { Approval, RequisitionStatus, Role, Vehicle } from "@/lib/definitions";
 import { format } from "date-fns";
 import UpdateStatusDialog from "./update-status-dialog";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface ActivityLogCardProps {
     createdAt: string;
@@ -20,7 +22,7 @@ const formatDate = (isoString: string) => {
     return format(new Date(isoString), "hh:mm a; MMM dd, yyyy");
 };
 
-export function ActivityLogCard({
+export async function ActivityLogCard({
     createdAt,
     approvals,
     vehicle,
@@ -34,6 +36,15 @@ export function ActivityLogCard({
     const byTO = approvals.find(
         (approval) => approval?.approverRole === Role.TRANSPORT_OFFICER
     );
+
+    const session = await getServerSession(authOptions);
+    const role = session?.role;
+    const allowHodUpdate =
+        byHOD?.approvalStatus === RequisitionStatus.PENDING &&
+        (role === Role.ADMIN || role === Role.HOD);
+    const allowTOUpate =
+        byTO?.approvalStatus === RequisitionStatus.PENDING &&
+        (role === Role.ADMIN || role === Role.TRANSPORT_OFFICER);
 
     return (
         <Card>
@@ -99,7 +110,7 @@ export function ActivityLogCard({
             </CardContent>
             <CardFooter>
                 <>
-                    {byHOD?.approvalStatus === RequisitionStatus.PENDING && (
+                    {allowHodUpdate && (
                         <div className="flex space-x-2">
                             <UpdateStatusDialog
                                 approvalId={byHOD.id}
@@ -113,7 +124,7 @@ export function ActivityLogCard({
                     )}
                 </>
                 <>
-                    {byTO?.approvalStatus === RequisitionStatus.PENDING && (
+                    {allowTOUpate && (
                         <div className="flex space-x-2">
                             <UpdateStatusDialog
                                 approvalId={byTO.id}

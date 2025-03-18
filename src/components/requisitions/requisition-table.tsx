@@ -15,6 +15,7 @@ import {
 } from "@/lib/definitions";
 import { format } from "date-fns/format";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface RequisitionTableProps {
     requisitions: Requisition[];
@@ -22,6 +23,7 @@ interface RequisitionTableProps {
 
 export function RequisitionTable({ requisitions }: RequisitionTableProps) {
     const pathname = usePathname();
+    const { data: session } = useSession();
 
     const formatDateTime = (isoString: string) => {
         return format(new Date(isoString), "hh:mm a; MMM dd, yyyy");
@@ -90,7 +92,7 @@ export function RequisitionTable({ requisitions }: RequisitionTableProps) {
                             <TableCell className="font-medium">
                                 {req.id}
                             </TableCell>
-                            <TableCell>{req.user.email}</TableCell>
+                            <TableCell>{req?.user?.email}</TableCell>
                             <TableCell>{req.purpose}</TableCell>
                             <TableCell>
                                 {formatDateTime(req.dateTimeRequired)}

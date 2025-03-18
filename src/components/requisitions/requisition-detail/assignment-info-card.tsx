@@ -7,8 +7,10 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Driver, Vehicle } from "@/lib/definitions";
+import { Driver, Role, Vehicle } from "@/lib/definitions";
 import AssignDialog from "./assign-dialog";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface AssignmentInfoCardProps {
     requisitionId: string;
@@ -21,6 +23,9 @@ export default async function AssignmentInfoCard({
     vehicle,
     driver,
 }: AssignmentInfoCardProps) {
+    const session = await getServerSession(authOptions);
+    const role = session?.role;
+    const allowUpdate = role === Role.ADMIN || role === Role.TRANSPORT_OFFICER;
     return (
         <Card>
             <CardHeader>
@@ -60,11 +65,13 @@ export default async function AssignmentInfoCard({
                         </div>
                     </div>
                 </div>
-                <AssignDialog
-                    requisitionId={requisitionId}
-                    vehicle={vehicle}
-                    driver={driver}
-                />
+                {allowUpdate && (
+                    <AssignDialog
+                        requisitionId={requisitionId}
+                        vehicle={vehicle}
+                        driver={driver}
+                    />
+                )}
             </CardContent>
         </Card>
     );

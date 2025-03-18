@@ -13,29 +13,29 @@ export default function DashboardLayout({
             variant: "default" as const,
         },
         {
-            title: "Trips",
-            icon: "calendar",
-            href: "/dashboard/trips",
-            variant: "default" as const,
-        },
-        {
             title: "Requisitions",
             icon: "fileText",
             href: "/dashboard/requisitions",
             variant: "default" as const,
         },
-        {
-            title: "Subscriptions",
-            icon: "users",
-            href: "/dashboard/subscriptions",
-            variant: "default" as const,
-        },
-        {
-            title: "One-Time Tickets",
-            icon: "ticket",
-            href: "/dashboard/tickets",
-            variant: "default" as const,
-        },
+        // {
+        //     title: "Trips",
+        //     icon: "calendar",
+        //     href: "/dashboard/trips",
+        //     variant: "default" as const,
+        // },
+        // {
+        //     title: "Subscriptions",
+        //     icon: "users",
+        //     href: "/dashboard/subscriptions",
+        //     variant: "default" as const,
+        // },
+        // {
+        //     title: "One-Time Tickets",
+        //     icon: "ticket",
+        //     href: "/dashboard/tickets",
+        //     variant: "default" as const,
+        // },
     ];
     return (
         <>

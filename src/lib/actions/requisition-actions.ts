@@ -2,7 +2,7 @@
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Requisition } from "@/lib/definitions";
+import { Requisition, Role } from "@/lib/definitions";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -151,7 +151,12 @@ export async function fetchRequisitionsAction({
     sortDirection = "desc",
 }: RequisitionsParams): Promise<PaginatedRequisitions> {
     const session = await getServerSession(authOptions);
-    const url = process.env.BACKEND_BASE_URL + "/requisitions/all";
+    const role = session?.role;
+    const suffix =
+        role === Role.ADMIN || role === Role.TRANSPORT_OFFICER
+            ? "/all"
+            : "/my-requisitions";
+    const url = process.env.BACKEND_BASE_URL + "/requisitions" + suffix;
     const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -175,7 +180,7 @@ export async function fetchRequisitionsAction({
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             return (
-                req.user.email.toLowerCase().includes(query) ||
+                req?.user?.email.toLowerCase().includes(query) ||
                 req.department.toLowerCase().includes(query) ||
                 req.purpose.toLowerCase().includes(query) ||
                 req.id.toLowerCase().includes(query)
