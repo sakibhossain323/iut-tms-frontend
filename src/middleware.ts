@@ -21,7 +21,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/officer", req.url));
 
     const isHodRoute = pathname.startsWith("/hod");
-    if (role === Role.HOD && !isOfficerRoute)
+    if (role === Role.HOD && !isHodRoute)
         return NextResponse.redirect(new URL("/hod", req.url));
 
     if (
