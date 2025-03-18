@@ -6,13 +6,14 @@ import {
     ActivityIcon,
     CalendarIcon,
     CarIcon,
+    ContactIcon,
     FileTextIcon,
     HelpCircle,
     HomeIcon,
     LogOut,
     Settings,
     TicketIcon,
-    User,
+    UserCogIcon,
     UserIcon,
     UsersIcon,
 } from "lucide-react";
@@ -82,8 +83,14 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         },
         {
             title: "Drivers",
-            icon: UserIcon,
+            icon: ContactIcon,
             href: "/admin/drivers",
+            variant: "default" as const,
+        },
+        {
+            title: "System Users",
+            icon: UserCogIcon,
+            href: "/admin/users",
             variant: "default" as const,
         },
     ];
@@ -157,7 +164,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
                             <DropdownMenuContent align="end" className="w-56">
                                 <DropdownMenuItem>
-                                    <User className="mr-2 h-4 w-4" />
+                                    <ContactIcon className="mr-2 h-4 w-4" />
                                     <span>Profile</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
