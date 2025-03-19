@@ -13,29 +13,29 @@ export default function AdminDashboardLayout({
             variant: "default" as const,
         },
         {
-            title: "Trips",
-            icon: "calendar",
-            href: "/admin/trips",
-            variant: "default" as const,
-        },
-        {
             title: "Requisitions",
             icon: "fileText",
             href: "/admin/requisitions",
             variant: "default" as const,
         },
-        {
-            title: "Subscriptions",
-            icon: "users",
-            href: "/admin/subscriptions",
-            variant: "default" as const,
-        },
-        {
-            title: "One-Time Tickets",
-            icon: "ticket",
-            href: "/admin/tickets",
-            variant: "default" as const,
-        },
+        // {
+        //     title: "Trips",
+        //     icon: "calendar",
+        //     href: "/admin/trips",
+        //     variant: "default" as const,
+        // },
+        // {
+        //     title: "Subscriptions",
+        //     icon: "users",
+        //     href: "/admin/subscriptions",
+        //     variant: "default" as const,
+        // },
+        // {
+        //     title: "One-Time Tickets",
+        //     icon: "ticket",
+        //     href: "/admin/tickets",
+        //     variant: "default" as const,
+        // },
         {
             title: "Vehicles",
             icon: "car",
