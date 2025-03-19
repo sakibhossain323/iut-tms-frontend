@@ -13,6 +13,7 @@ import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { memo } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface UserTableProps {
     users: User[];
@@ -37,7 +38,15 @@ const getRoleBadgeColor = (role: Role) => {
 
 // Memoize the table row to prevent unnecessary re-renders
 const UserTableRow = memo(
-    ({ user, pathname }: { user: User; pathname: string }) => (
+    ({
+        user,
+        pathname,
+        allowView,
+    }: {
+        user: User;
+        pathname: string;
+        allowView: boolean;
+    }) => (
         <TableRow key={user.id}>
             <TableCell className="font-medium">{user.name}</TableCell>
             <TableCell>{user.email}</TableCell>
@@ -68,6 +77,9 @@ UserTableRow.displayName = "UserTableRow";
 
 export function UserTable({ users }: UserTableProps) {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    const role = session?.role;
+    const allowView = role === Role.ADMIN;
     return (
         <Table>
             <TableHeader>
@@ -78,7 +90,9 @@ export function UserTable({ users }: UserTableProps) {
                     <TableHead>Designation</TableHead>
                     <TableHead>Contact Number</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {allowView && (
+                        <TableHead className="text-right">Actions</TableHead>
+                    )}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,6 +108,7 @@ export function UserTable({ users }: UserTableProps) {
                             key={user.id}
                             user={user}
                             pathname={pathname}
+                            allowView={allowView}
                         />
                     ))
                 )}
