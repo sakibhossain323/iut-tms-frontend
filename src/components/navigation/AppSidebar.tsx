@@ -77,8 +77,8 @@ export function AppSidebar({
         ADMIN: "/admin",
         TRANSPORT_OFFICER: "/officer",
         HOD: "/hod",
-        DRIVER: "",
-        USER: "",
+        DRIVER: "/dashboard",
+        USER: "/dashboard",
     };
 
     return (
