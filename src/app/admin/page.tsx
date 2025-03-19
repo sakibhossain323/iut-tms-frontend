@@ -1,6 +1,10 @@
 // AdminDashboard.jsx
 import { Suspense } from "react";
-import { PendingRequisitionsCard } from "@/components/dashboard/card";
+import {
+    ActiveDriversCard,
+    ActiveVehiclesCard,
+    PendingRequisitionsCard,
+} from "@/components/dashboard/card";
 import { CardSkeleton } from "@/components/dashboard/card-skeleton";
 
 export default function AdminDashboard() {
@@ -13,12 +17,15 @@ export default function AdminDashboard() {
                 <Suspense fallback={<CardSkeleton />}>
                     <PendingRequisitionsCard />
                 </Suspense>
-                {/* <Suspense fallback={<CardSkeleton />}>
+                <Suspense fallback={<CardSkeleton />}>
                     <ActiveVehiclesCard />
                 </Suspense>
+
                 <Suspense fallback={<CardSkeleton />}>
                     <ActiveDriversCard />
                 </Suspense>
+                {/* 
+
                 <Suspense fallback={<CardSkeleton />}>
                     <TotalUsersCard />
                 </Suspense> */}
