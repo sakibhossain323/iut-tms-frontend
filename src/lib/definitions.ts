@@ -64,6 +64,7 @@ export interface User {
     department: string;
     role: Role;
     createdAt: string;
+    eWalletBalance: number;
 }
 
 export enum DriverStatus {

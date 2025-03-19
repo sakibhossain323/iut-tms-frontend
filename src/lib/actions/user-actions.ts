@@ -1,8 +1,10 @@
 "use server";
 
+import { z } from "zod";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { User, Role } from "@/lib/definitions";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 
 export type GetUsersParams = {
     page?: number;
@@ -101,4 +103,79 @@ export async function fetchUsersAction(
         totalPages,
         currentPage: sanitizedPage,
     };
+}
+
+const updateRoleSchema = z.object({
+    userId: z.string().min(1, "User ID is required"),
+    role: z.enum(["ADMIN", "USER", "DRIVER", "HOD", "TRANSPORT_OFFICER"], {
+        errorMap: () => ({ message: "Invalid role selected" }),
+    }),
+});
+
+export type UpdateRoleFormState = {
+    errors?: {
+        userId?: string[];
+        role?: string[];
+        _form?: string[];
+    };
+    success: boolean;
+    message: string;
+};
+
+export async function updateUserRoleAction(
+    prevState: UpdateRoleFormState,
+    formData: FormData
+): Promise<UpdateRoleFormState> {
+    try {
+        const validatedFields = updateRoleSchema.safeParse({
+            userId: formData.get("userId"),
+            role: formData.get("role"),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                errors: validatedFields.error.flatten().fieldErrors,
+                success: false,
+                message: "Please correct the errors in the form.",
+            };
+        }
+
+        // Destructure validated data
+        const { userId, role } = validatedFields.data;
+        const session = await getServerSession(authOptions);
+        const url =
+            process.env.BACKEND_BASE_URL + `/users/${userId}/change-role`;
+
+        const body = JSON.stringify({ role });
+        const response = await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.accessToken}`,
+            },
+            body,
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            return {
+                success: false,
+                message: data?.message || "Failed to update user role",
+            };
+        }
+        revalidatePath("/");
+
+        return {
+            success: true,
+            message: "User role updated successfully.",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred",
+        };
+    }
 }
