@@ -152,7 +152,7 @@ export default function RequisitionsPage() {
 
     const handleReset = () => {
         setSearchQuery("");
-        setStatusFilter("All");
+        setStatusFilter("all");
         setSortBy("createdAt");
         setSortDirection("desc");
         setCurrentPage(1);
