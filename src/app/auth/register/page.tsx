@@ -30,6 +30,15 @@ const initialState: RegisterFormState = {
     message: "",
 };
 
+// Department enum
+enum Department {
+    CSE = "CSE",
+    EEE = "EEE",
+    CEE = "CEE",
+    MPE = "MPE",
+    GENERAL = "GENERAL",
+}
+
 export default function RegisterPage() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -38,8 +47,6 @@ export default function RegisterPage() {
         registerUser,
         initialState
     );
-    // Remove this line:
-    // const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Client-side validation for immediate feedback
     const [clientErrors, setClientErrors] = useState({
@@ -47,6 +54,7 @@ export default function RegisterPage() {
         email: "",
         designation: "",
         contactNumber: "",
+        department: "",
         password: "",
         confirmPassword: "",
     });
@@ -57,6 +65,7 @@ export default function RegisterPage() {
         email: "",
         designation: "",
         contactNumber: "",
+        department: Department.CSE,
         password: "",
         confirmPassword: "",
     });
@@ -109,6 +118,11 @@ export default function RegisterPage() {
                     error = "Contact number is invalid";
                 }
                 break;
+            case "department":
+                if (!value) {
+                    error = "Department is required";
+                }
+                break;
             case "password":
                 if (!value) {
                     error = "Password is required";
@@ -128,7 +142,9 @@ export default function RegisterPage() {
         return error;
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
         const { name, value } = e.target;
 
         // Update form data
@@ -168,6 +184,7 @@ export default function RegisterPage() {
                 "contactNumber",
                 formData.contactNumber
             ),
+            department: validateField("department", formData.department),
             password: validateField("password", formData.password),
             confirmPassword: validateField(
                 "confirmPassword",
@@ -322,6 +339,34 @@ export default function RegisterPage() {
                                         </p>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="department">Department</Label>
+                                <select
+                                    id="department"
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleChange}
+                                    disabled={isPending}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    aria-invalid={
+                                        getFieldError("department")
+                                            ? "true"
+                                            : "false"
+                                    }
+                                >
+                                    {Object.values(Department).map((dept) => (
+                                        <option key={dept} value={dept}>
+                                            {dept}
+                                        </option>
+                                    ))}
+                                </select>
+                                {getFieldError("department") && (
+                                    <p className="text-sm text-red-500">
+                                        {getFieldError("department")}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
