@@ -153,7 +153,9 @@ export async function fetchRequisitionsAction({
     const session = await getServerSession(authOptions);
     const role = session?.role;
     const suffix =
-        role === Role.ADMIN || role === Role.TRANSPORT_OFFICER
+        role === Role.ADMIN ||
+        role === Role.TRANSPORT_OFFICER ||
+        role === Role.HOD
             ? "/all"
             : "/my-requisitions";
     const url = process.env.BACKEND_BASE_URL + "/requisitions" + suffix;

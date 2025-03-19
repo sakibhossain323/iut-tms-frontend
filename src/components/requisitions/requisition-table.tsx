@@ -10,6 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import {
+    Role,
     RequisitionStatus as Status,
     type Requisition,
 } from "@/lib/definitions";
@@ -24,6 +25,14 @@ interface RequisitionTableProps {
 export function RequisitionTable({ requisitions }: RequisitionTableProps) {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const role = session?.role;
+    const showRequester =
+        role === Role.ADMIN ||
+        role === Role.TRANSPORT_OFFICER ||
+        role === Role.HOD;
+
+    const showDepartment =
+        role === Role.ADMIN || role === Role.TRANSPORT_OFFICER;
 
     const formatDateTime = (isoString: string) => {
         return format(new Date(isoString), "hh:mm a; MMM dd, yyyy");
@@ -77,7 +86,8 @@ export function RequisitionTable({ requisitions }: RequisitionTableProps) {
             <TableHeader>
                 <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Requester</TableHead>
+                    {showRequester && <TableHead>Requester</TableHead>}
+                    {showDepartment && <TableHead>Department</TableHead>}
                     <TableHead>Purpose</TableHead>
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Passengers</TableHead>
@@ -92,7 +102,14 @@ export function RequisitionTable({ requisitions }: RequisitionTableProps) {
                             <TableCell className="font-medium">
                                 {req.id}
                             </TableCell>
-                            <TableCell>{req?.user?.email}</TableCell>
+                            {showRequester && (
+                                <TableCell>{req?.user?.email}</TableCell>
+                            )}
+                            {showDepartment && (
+                                <TableCell>
+                                    {req?.user?.department || "--"}
+                                </TableCell>
+                            )}
                             <TableCell>{req.purpose}</TableCell>
                             <TableCell>
                                 {formatDateTime(req.dateTimeRequired)}
