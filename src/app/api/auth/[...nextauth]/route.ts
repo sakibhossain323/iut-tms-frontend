@@ -65,6 +65,7 @@ export const authOptions: NextAuthOptions = {
             if (token) {
                 session.accessToken = token.accessToken;
                 session.role = token?.role;
+                session.id = token.sub;
             }
             return session;
         },

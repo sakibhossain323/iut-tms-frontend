@@ -72,6 +72,14 @@ export function AppSidebar({
     const pathname = usePathname();
 
     const { data: session } = useSession();
+    const role = session?.role as string;
+    const roleMap: Record<string, string> = {
+        ADMIN: "/admin",
+        TRANSPORT_OFFICER: "/officer",
+        HOD: "/hod",
+        DRIVER: "",
+        USER: "",
+    };
 
     return (
         <SidebarProvider>
@@ -144,7 +152,9 @@ export function AppSidebar({
                             <DropdownMenuContent align="end" className="w-56">
                                 <DropdownMenuItem>
                                     <ContactIcon className="mr-2 h-4 w-4" />
-                                    <span>Profile</span>
+                                    <Link href={`${roleMap[role]}/profile`}>
+                                        Profile
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <Settings className="mr-2 h-4 w-4" />
