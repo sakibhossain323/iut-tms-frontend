@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { memo } from "react";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface UserTableProps {
     users: User[];
@@ -35,41 +37,62 @@ const getRoleBadgeColor = (role: Role) => {
 };
 
 // Memoize the table row to prevent unnecessary re-renders
-const UserTableRow = memo(({ user }: { user: User }) => (
-    <TableRow key={user.id}>
-        <TableCell className="font-medium">{user.name}</TableCell>
-        <TableCell>{user.email}</TableCell>
-        <TableCell>{user.designation}</TableCell>
-        <TableCell>{user.contactNumber}</TableCell>
-        <TableCell>
-            <Badge className={getRoleBadgeColor(user.role)} variant="outline">
-                {user.role}
-            </Badge>
-        </TableCell>
-        <TableCell className="text-right">
-            <Button variant="ghost" size="sm" asChild>
-                <Link href={`/users/${user.id}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View
-                </Link>
-            </Button>
-        </TableCell>
-    </TableRow>
-));
+const UserTableRow = memo(
+    ({
+        user,
+        pathname,
+        allowView,
+    }: {
+        user: User;
+        pathname: string;
+        allowView: boolean;
+    }) => (
+        <TableRow key={user.id}>
+            <TableCell className="font-medium">{user.name}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.department || "--"}</TableCell>
+            <TableCell>{user.designation}</TableCell>
+            <TableCell>{user.contactNumber}</TableCell>
+            <TableCell>
+                <Badge
+                    className={getRoleBadgeColor(user.role)}
+                    variant="outline"
+                >
+                    {user.role}
+                </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+                <Button variant="ghost" size="sm" asChild>
+                    <Link href={`${pathname}/${user.id}`}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View
+                    </Link>
+                </Button>
+            </TableCell>
+        </TableRow>
+    )
+);
 
 UserTableRow.displayName = "UserTableRow";
 
 export function UserTable({ users }: UserTableProps) {
+    const pathname = usePathname();
+    const { data: session } = useSession();
+    const role = session?.role;
+    const allowView = role === Role.ADMIN;
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Department</TableHead>
                     <TableHead>Designation</TableHead>
                     <TableHead>Contact Number</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {allowView && (
+                        <TableHead className="text-right">Actions</TableHead>
+                    )}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,7 +104,12 @@ export function UserTable({ users }: UserTableProps) {
                     </TableRow>
                 ) : (
                     users.map((user) => (
-                        <UserTableRow key={user.id} user={user} />
+                        <UserTableRow
+                            key={user.id}
+                            user={user}
+                            pathname={pathname}
+                            allowView={allowView}
+                        />
                     ))
                 )}
             </TableBody>

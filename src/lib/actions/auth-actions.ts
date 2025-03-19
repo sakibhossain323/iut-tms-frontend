@@ -14,6 +14,7 @@ const registerSchema = z
                 /^\+?[0-9\s-()]{8,}$/,
                 "Please enter a valid contact number"
             ),
+        department: z.string().min(1, "Department is required"),
         password: z.string().min(6, "Password must be at least 6 characters"),
         confirmPassword: z.string(),
     })
@@ -29,6 +30,7 @@ export type RegisterFormState = {
         email?: string[];
         designation?: string[];
         contactNumber?: string[];
+        department?: string[];
         password?: string[];
         confirmPassword?: string[];
         _form?: string[];
@@ -47,6 +49,7 @@ export async function registerUser(
         email: formData.get("email"),
         designation: formData.get("designation"),
         contactNumber: formData.get("contactNumber"),
+        department: formData.get("department"),
         password: formData.get("password"),
         confirmPassword: formData.get("confirmPassword"),
     });
@@ -61,7 +64,7 @@ export async function registerUser(
     }
 
     // Destructure validated data
-    const { name, email, designation, contactNumber, password } =
+    const { name, email, designation, contactNumber, department, password } =
         validatedFields.data;
 
     try {
@@ -70,6 +73,7 @@ export async function registerUser(
             email,
             password,
             designation,
+            department,
             contactNumber,
         };
         const url = process.env.BACKEND_BASE_URL + "/users/register";

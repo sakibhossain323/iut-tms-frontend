@@ -1,9 +1,6 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,13 +19,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { RequisitionTable } from "@/components/requisitions/requisition-table";
-import { RequisitionTableSkeleton } from "@/components/requisitions/requisition-table-skeleton";
-import type { PaginatedRequisitions } from "@/lib/actions/requisition-actions";
-import { fetchRequisitionsAction } from "@/lib/actions/requisition-actions";
-import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
+import { Driver, DriverStatus as Status } from "@/lib/definitions";
+import {
+    DriverPagination,
+    fetchDriversAction,
+} from "@/lib/actions/driver-actions";
+import { DriverTable } from "@/components/drivers/driver-table";
+import { DriverTableSkeleton } from "@/components/drivers/driver-table-skeleton";
+import AddDriverDialog from "@/components/drivers/add-driver-dialog";
 
-export default function RequisitionsPage() {
+export default function DriversPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -42,7 +42,7 @@ export default function RequisitionsPage() {
         10
     );
     const initialSortBy =
-        (searchParams.get("sortBy") as keyof Requisition) || "createdAt";
+        (searchParams.get("sortBy") as keyof Driver) || "createdAt";
     const initialSortDir =
         (searchParams.get("sortDir") as "asc" | "desc") || "desc";
 
@@ -51,18 +51,19 @@ export default function RequisitionsPage() {
     const [statusFilter, setStatusFilter] = useState(initialStatus);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [itemsPerPage, setItemsPerPage] = useState(initialPerPage);
-    const [sortBy, setSortBy] = useState<keyof Requisition>(initialSortBy);
+    const [sortBy, setSortBy] = useState<keyof Driver>(initialSortBy);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
         initialSortDir
     );
 
     // State for requisitions data
-    const [requisitionsData, setRequisitionsData] =
-        useState<PaginatedRequisitions | null>(null);
+    const [driversData, setDriversData] = useState<DriverPagination | null>(
+        null
+    );
     const [isLoading, setIsLoading] = useState(true);
 
     // Function to fetch requisitions
-    const fetchRequisitions = async () => {
+    const fetchDrivers = async () => {
         setIsLoading(true);
 
         try {
@@ -77,7 +78,7 @@ export default function RequisitionsPage() {
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
 
             // Call the server action directly instead of making an API request
-            const data = await fetchRequisitionsAction({
+            const data = await fetchDriversAction({
                 searchQuery,
                 statusFilter,
                 page: currentPage,
@@ -86,7 +87,7 @@ export default function RequisitionsPage() {
                 sortDirection,
             });
 
-            setRequisitionsData(data);
+            setDriversData(data);
         } catch (error) {
             console.error(error);
         } finally {
@@ -96,7 +97,7 @@ export default function RequisitionsPage() {
 
     // Fetch requisitions when filters or pagination change
     useEffect(() => {
-        fetchRequisitions();
+        fetchDrivers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
@@ -126,7 +127,7 @@ export default function RequisitionsPage() {
         // Reset to first page when sort changes
         setCurrentPage(1);
         const [newSortBy, newSortDirection] = value.split("-") as [
-            keyof Requisition,
+            keyof Driver,
             "asc" | "desc"
         ];
         setSortBy(newSortBy);
@@ -147,7 +148,7 @@ export default function RequisitionsPage() {
 
     // Handle refresh button click
     const handleRefresh = () => {
-        fetchRequisitions();
+        fetchDrivers();
     };
 
     const handleReset = () => {
@@ -156,22 +157,20 @@ export default function RequisitionsPage() {
         setSortBy("createdAt");
         setSortDirection("desc");
         setCurrentPage(1);
-        setItemsPerPage(10);
+        setItemsPerPage(5);
     };
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight font-mono">
-                    Requisitions
+                    Drivers
                 </h2>
                 <div className="flex items-center space-x-2">
                     <Button variant="outline" onClick={handleReset}>
                         Reset Filters
                     </Button>
-                    <Button asChild>
-                        <Link href={`${pathname}/new`}>New Requisition</Link>
-                    </Button>
+                    <AddDriverDialog handleRefresh={handleRefresh} />
                 </div>
             </div>
 
@@ -179,15 +178,15 @@ export default function RequisitionsPage() {
                 <CardHeader>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
-                            <CardTitle>Requisition Management</CardTitle>
+                            <CardTitle>Driver Management</CardTitle>
                             <CardDescription className="mt-1">
-                                Manage vehicle requisition requests
+                                Manage available drivers.
                             </CardDescription>
                         </div>
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <div className="relative">
                                 <Input
-                                    placeholder="Search requisitions..."
+                                    placeholder="Search drivers..."
                                     value={searchQuery}
                                     onChange={handleSearchChange}
                                     className="w-full sm:w-[200px]"
@@ -204,17 +203,14 @@ export default function RequisitionsPage() {
                                     <SelectItem value="all">
                                         All Statuses
                                     </SelectItem>
-                                    <SelectItem value={Status.PENDING}>
-                                        Pending
+                                    <SelectItem value={Status.ACTIVE}>
+                                        Active
                                     </SelectItem>
-                                    <SelectItem value={Status.APPROVED}>
-                                        Approved
+                                    <SelectItem value={Status.INACTIVE}>
+                                        Inactive
                                     </SelectItem>
-                                    <SelectItem value={Status.REJECTED}>
-                                        Rejected
-                                    </SelectItem>
-                                    <SelectItem value={Status.COMPLETED}>
-                                        Completed
+                                    <SelectItem value={Status.ON_LEAVE}>
+                                        On Leave
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -231,6 +227,12 @@ export default function RequisitionsPage() {
                                     </SelectItem>
                                     <SelectItem value="createdAt-asc">
                                         Oldest First
+                                    </SelectItem>
+                                    <SelectItem value="name-asc">
+                                        Name (A-Z)
+                                    </SelectItem>
+                                    <SelectItem value="name-desc">
+                                        Name (Z-A)
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -265,11 +267,12 @@ export default function RequisitionsPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <RequisitionTableSkeleton />
-                    ) : requisitionsData ? (
+                        <DriverTableSkeleton />
+                    ) : driversData ? (
                         <>
-                            <RequisitionTable
-                                requisitions={requisitionsData.data}
+                            <DriverTable
+                                drivers={driversData.data}
+                                handleRefresh={handleRefresh}
                             />
 
                             {/* Pagination controls */}
@@ -277,19 +280,18 @@ export default function RequisitionsPage() {
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-muted-foreground">
                                         Showing{" "}
-                                        {requisitionsData.totalItems > 0
-                                            ? (requisitionsData.currentPage -
-                                                  1) *
+                                        {driversData.totalItems > 0
+                                            ? (driversData.currentPage - 1) *
                                                   itemsPerPage +
                                               1
                                             : 0}{" "}
                                         to{" "}
                                         {Math.min(
-                                            requisitionsData.currentPage *
+                                            driversData.currentPage *
                                                 itemsPerPage,
-                                            requisitionsData.totalItems
+                                            driversData.totalItems
                                         )}{" "}
-                                        of {requisitionsData.totalItems} entries
+                                        of {driversData.totalItems} entries
                                     </p>
                                 </div>
 
@@ -297,12 +299,10 @@ export default function RequisitionsPage() {
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        disabled={
-                                            requisitionsData.currentPage === 1
-                                        }
+                                        disabled={driversData.currentPage === 1}
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage - 1
+                                                driversData.currentPage - 1
                                             )
                                         }
                                     >
@@ -313,9 +313,9 @@ export default function RequisitionsPage() {
                                     <div className="flex items-center gap-1">
                                         {(() => {
                                             const totalPages =
-                                                requisitionsData.totalPages;
+                                                driversData.totalPages;
                                             const currentPage =
-                                                requisitionsData.currentPage;
+                                                driversData.currentPage;
 
                                             // Always show first page
                                             const pages = [1];
@@ -414,13 +414,13 @@ export default function RequisitionsPage() {
                                         variant="outline"
                                         size="icon"
                                         disabled={
-                                            requisitionsData.currentPage ===
-                                                requisitionsData.totalPages ||
-                                            requisitionsData.totalPages === 0
+                                            driversData.currentPage ===
+                                                driversData.totalPages ||
+                                            driversData.totalPages === 0
                                         }
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage + 1
+                                                driversData.currentPage + 1
                                             )
                                         }
                                     >
@@ -431,7 +431,7 @@ export default function RequisitionsPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            Failed to load requisitions. Please try again.
+                            Failed to load drivers. Please try again.
                         </div>
                     )}
                 </CardContent>

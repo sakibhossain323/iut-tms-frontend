@@ -41,61 +41,45 @@ import {
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
-export function AppSidebar({ children }: { children: React.ReactNode }) {
+const iconMap: Record<string, React.ElementType> = {
+    activity: ActivityIcon,
+    calendar: CalendarIcon,
+    car: CarIcon,
+    contact: ContactIcon,
+    fileText: FileTextIcon,
+    helpCircle: HelpCircle,
+    home: HomeIcon,
+    logOut: LogOut,
+    settings: Settings,
+    ticket: TicketIcon,
+    userCog: UserCogIcon,
+    user: UserIcon,
+    users: UsersIcon,
+};
+
+export function AppSidebar({
+    children,
+    routes,
+}: {
+    children: React.ReactNode;
+    routes: Array<{
+        title: string;
+        icon: string;
+        href: string;
+        variant: string;
+    }>;
+}) {
     const pathname = usePathname();
 
-    const routes = [
-        {
-            title: "Dashboard",
-            icon: HomeIcon,
-            href: "/admin",
-            variant: "default" as const,
-        },
-        {
-            title: "Trips",
-            icon: CalendarIcon,
-            href: "/admin/trips",
-            variant: "default" as const,
-        },
-        {
-            title: "Requisitions",
-            icon: FileTextIcon,
-            href: "/admin/requisitions",
-            variant: "default" as const,
-        },
-        {
-            title: "Subscriptions",
-            icon: UsersIcon,
-            href: "/admin/subscriptions",
-            variant: "default" as const,
-        },
-        {
-            title: "One-Time Tickets",
-            icon: TicketIcon,
-            href: "/admin/tickets",
-            variant: "default" as const,
-        },
-        {
-            title: "Vehicles",
-            icon: CarIcon,
-            href: "/admin/vehicles",
-            variant: "default" as const,
-        },
-        {
-            title: "Drivers",
-            icon: ContactIcon,
-            href: "/admin/drivers",
-            variant: "default" as const,
-        },
-        {
-            title: "System Users",
-            icon: UserCogIcon,
-            href: "/admin/users",
-            variant: "default" as const,
-        },
-    ];
-
     const { data: session } = useSession();
+    const role = session?.role as string;
+    const roleMap: Record<string, string> = {
+        ADMIN: "/admin",
+        TRANSPORT_OFFICER: "/officer",
+        HOD: "/hod",
+        DRIVER: "",
+        USER: "",
+    };
 
     return (
         <SidebarProvider>
@@ -120,20 +104,23 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                     {/* Sidebar navigation routes */}
                     <SidebarContent>
                         <SidebarMenu>
-                            {routes.map((route) => (
-                                <SidebarMenuItem key={route.href}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        isActive={pathname === route.href}
-                                        tooltip={route.title}
-                                    >
-                                        <Link href={route.href}>
-                                            <route.icon className="h-5 w-5" />
-                                            <span>{route.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
+                            {routes.map((route) => {
+                                const IconComponent = iconMap[route.icon];
+                                return (
+                                    <SidebarMenuItem key={route.href}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={pathname === route.href}
+                                            tooltip={route.title}
+                                        >
+                                            <Link href={route.href}>
+                                                <IconComponent className="h-5 w-5" />
+                                                <span>{route.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                );
+                            })}
                         </SidebarMenu>
                     </SidebarContent>
 
@@ -165,7 +152,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                             <DropdownMenuContent align="end" className="w-56">
                                 <DropdownMenuItem>
                                     <ContactIcon className="mr-2 h-4 w-4" />
-                                    <span>Profile</span>
+                                    <Link href={`${roleMap[role]}/profile`}>
+                                        Profile
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>
                                     <Settings className="mr-2 h-4 w-4" />

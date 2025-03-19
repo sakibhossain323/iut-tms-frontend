@@ -22,92 +22,102 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { RequisitionTable } from "@/components/requisitions/requisition-table";
-import { RequisitionTableSkeleton } from "@/components/requisitions/requisition-table-skeleton";
-import type { PaginatedRequisitions } from "@/lib/actions/requisition-actions";
-import { fetchRequisitionsAction } from "@/lib/actions/requisition-actions";
-import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
+import { UserTable } from "@/components/users/user-table";
+import { UserTableSkeleton } from "@/components/users/user-table-skeleton";
+import { fetchUsersAction } from "@/lib/actions/user-actions";
+import { type User, Role } from "@/lib/definitions";
 
-export default function RequisitionsPage() {
+export default function UsersPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
     // Get initial values from URL
     const initialQuery = searchParams.get("query") || "";
-    const initialStatus = searchParams.get("status") || "all";
+    const initialRole = (searchParams.get("role") as Role | "All") || "All";
     const initialPage = Number.parseInt(searchParams.get("page") || "1", 10);
     const initialPerPage = Number.parseInt(
-        searchParams.get("perPage") || "5",
+        searchParams.get("perPage") || "10",
         10
     );
     const initialSortBy =
-        (searchParams.get("sortBy") as keyof Requisition) || "createdAt";
+        (searchParams.get("sortBy") as keyof User) || "createdAt";
     const initialSortDir =
         (searchParams.get("sortDir") as "asc" | "desc") || "desc";
 
     // State for filters and pagination
     const [searchQuery, setSearchQuery] = useState(initialQuery);
-    const [statusFilter, setStatusFilter] = useState(initialStatus);
+    const [roleFilter, setRoleFilter] = useState(initialRole);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [itemsPerPage, setItemsPerPage] = useState(initialPerPage);
-    const [sortBy, setSortBy] = useState<keyof Requisition>(initialSortBy);
+    const [sortBy, setSortBy] = useState<keyof User>(initialSortBy);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
         initialSortDir
     );
 
-    // State for requisitions data
-    const [requisitionsData, setRequisitionsData] =
-        useState<PaginatedRequisitions | null>(null);
+    // State for users data
+    const [usersData, setUsersData] = useState<{
+        users: User[];
+        total: number;
+        totalPages: number;
+        currentPage: number;
+    } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Function to fetch requisitions
-    const fetchRequisitions = async () => {
+    // Function to fetch users
+    const fetchUsers = async () => {
         setIsLoading(true);
 
         try {
-            // Build query string for URL update (not for data fetching)
+            // Build query string for URL update
             const params = new URLSearchParams();
             if (searchQuery) params.set("query", searchQuery);
-            if (statusFilter !== "all") params.set("status", statusFilter);
+            if (roleFilter !== "All") params.set("role", roleFilter);
             params.set("page", currentPage.toString());
             params.set("perPage", itemsPerPage.toString());
+            if (sortBy !== "createdAt") params.set("sortBy", sortBy);
+            if (sortDirection !== "desc") params.set("sortDir", sortDirection);
 
             // Update URL without refreshing the page
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
 
-            // Call the server action directly instead of making an API request
-            const data = await fetchRequisitionsAction({
-                searchQuery,
-                statusFilter,
+            // Call the server action directly
+            const result = await fetchUsersAction({
                 page: currentPage,
-                itemsPerPage,
+                limit: itemsPerPage,
+                role: roleFilter,
+                search: searchQuery,
                 sortBy,
                 sortDirection,
             });
 
-            setRequisitionsData(data);
+            setUsersData({
+                users: result.users,
+                total: result.total,
+                totalPages: result.totalPages,
+                currentPage: currentPage,
+            });
         } catch (error) {
-            console.error(error);
+            console.error("Error fetching users:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Fetch requisitions when filters or pagination change
+    // Fetch users when filters or pagination change
     useEffect(() => {
-        fetchRequisitions();
+        fetchUsers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
-        statusFilter,
+        roleFilter,
         currentPage,
         itemsPerPage,
         sortBy,
         sortDirection,
     ]);
 
-    // Handle search input change with debounce
+    // Handle search input change
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         // Reset to first page when search changes
@@ -115,22 +125,11 @@ export default function RequisitionsPage() {
         setSearchQuery(value);
     };
 
-    // Handle status filter change
-    const handleStatusChange = (value: string) => {
+    // Handle role filter change
+    const handleRoleChange = (value: string) => {
         // Reset to first page when filter changes
         setCurrentPage(1);
-        setStatusFilter(value);
-    };
-
-    const handleSortChange = (value: string) => {
-        // Reset to first page when sort changes
-        setCurrentPage(1);
-        const [newSortBy, newSortDirection] = value.split("-") as [
-            keyof Requisition,
-            "asc" | "desc"
-        ];
-        setSortBy(newSortBy);
-        setSortDirection(newSortDirection);
+        setRoleFilter(value as Role | "All");
     };
 
     // Handle items per page change
@@ -140,6 +139,18 @@ export default function RequisitionsPage() {
         setItemsPerPage(Number.parseInt(value, 10));
     };
 
+    // Handle sort change
+    const handleSortChange = (value: string) => {
+        // Reset to first page when sort changes
+        setCurrentPage(1);
+        const [newSortBy, newSortDirection] = value.split("-") as [
+            keyof User,
+            "asc" | "desc"
+        ];
+        setSortBy(newSortBy);
+        setSortDirection(newSortDirection);
+    };
+
     // Handle page change
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -147,12 +158,13 @@ export default function RequisitionsPage() {
 
     // Handle refresh button click
     const handleRefresh = () => {
-        fetchRequisitions();
+        fetchUsers();
     };
 
+    // Handle reset all filters
     const handleReset = () => {
         setSearchQuery("");
-        setStatusFilter("all");
+        setRoleFilter("All");
         setSortBy("createdAt");
         setSortDirection("desc");
         setCurrentPage(1);
@@ -163,14 +175,11 @@ export default function RequisitionsPage() {
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight font-mono">
-                    Requisitions
+                    System Users
                 </h2>
                 <div className="flex items-center space-x-2">
                     <Button variant="outline" onClick={handleReset}>
                         Reset Filters
-                    </Button>
-                    <Button asChild>
-                        <Link href={`${pathname}/new`}>New Requisition</Link>
                     </Button>
                 </div>
             </div>
@@ -179,42 +188,45 @@ export default function RequisitionsPage() {
                 <CardHeader>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
-                            <CardTitle>Requisition Management</CardTitle>
+                            <CardTitle>User Management</CardTitle>
                             <CardDescription className="mt-1">
-                                Manage vehicle requisition requests
+                                Manage users and their roles in the system
                             </CardDescription>
                         </div>
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <div className="relative">
                                 <Input
-                                    placeholder="Search requisitions..."
+                                    placeholder="Search users..."
                                     value={searchQuery}
                                     onChange={handleSearchChange}
                                     className="w-full sm:w-[200px]"
                                 />
                             </div>
                             <Select
-                                value={statusFilter}
-                                onValueChange={handleStatusChange}
+                                value={roleFilter}
+                                onValueChange={handleRoleChange}
                             >
                                 <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder="Filter by status" />
+                                    <SelectValue placeholder="Filter by role" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">
-                                        All Statuses
+                                    <SelectItem value="All">
+                                        All Roles
                                     </SelectItem>
-                                    <SelectItem value={Status.PENDING}>
-                                        Pending
+                                    <SelectItem value={Role.ADMIN}>
+                                        Admin
                                     </SelectItem>
-                                    <SelectItem value={Status.APPROVED}>
-                                        Approved
+                                    <SelectItem value={Role.TRANSPORT_OFFICER}>
+                                        Transport Officer
                                     </SelectItem>
-                                    <SelectItem value={Status.REJECTED}>
-                                        Rejected
+                                    <SelectItem value={Role.HOD}>
+                                        HOD
                                     </SelectItem>
-                                    <SelectItem value={Status.COMPLETED}>
-                                        Completed
+                                    <SelectItem value={Role.USER}>
+                                        User
+                                    </SelectItem>
+                                    <SelectItem value={Role.DRIVER}>
+                                        Driver
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -226,6 +238,12 @@ export default function RequisitionsPage() {
                                     <SelectValue placeholder="Sort by" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="name-asc">
+                                        Name (A-Z)
+                                    </SelectItem>
+                                    <SelectItem value="name-desc">
+                                        Name (Z-A)
+                                    </SelectItem>
                                     <SelectItem value="createdAt-desc">
                                         Newest First
                                     </SelectItem>
@@ -265,31 +283,28 @@ export default function RequisitionsPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <RequisitionTableSkeleton />
-                    ) : requisitionsData ? (
+                        <UserTableSkeleton />
+                    ) : usersData ? (
                         <>
-                            <RequisitionTable
-                                requisitions={requisitionsData.data}
-                            />
+                            <UserTable users={usersData.users} />
 
                             {/* Pagination controls */}
                             <div className="mt-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-muted-foreground">
                                         Showing{" "}
-                                        {requisitionsData.totalItems > 0
-                                            ? (requisitionsData.currentPage -
-                                                  1) *
+                                        {usersData.total > 0
+                                            ? (usersData.currentPage - 1) *
                                                   itemsPerPage +
                                               1
                                             : 0}{" "}
                                         to{" "}
                                         {Math.min(
-                                            requisitionsData.currentPage *
+                                            usersData.currentPage *
                                                 itemsPerPage,
-                                            requisitionsData.totalItems
+                                            usersData.total
                                         )}{" "}
-                                        of {requisitionsData.totalItems} entries
+                                        of {usersData.total} entries
                                     </p>
                                 </div>
 
@@ -297,25 +312,23 @@ export default function RequisitionsPage() {
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        disabled={
-                                            requisitionsData.currentPage === 1
-                                        }
+                                        disabled={usersData.currentPage === 1}
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage - 1
+                                                usersData.currentPage - 1
                                             )
                                         }
                                     >
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
 
-                                    {/* Improved pagination logic */}
+                                    {/* Pagination logic */}
                                     <div className="flex items-center gap-1">
                                         {(() => {
                                             const totalPages =
-                                                requisitionsData.totalPages;
+                                                usersData.totalPages;
                                             const currentPage =
-                                                requisitionsData.currentPage;
+                                                usersData.currentPage;
 
                                             // Always show first page
                                             const pages = [1];
@@ -414,13 +427,13 @@ export default function RequisitionsPage() {
                                         variant="outline"
                                         size="icon"
                                         disabled={
-                                            requisitionsData.currentPage ===
-                                                requisitionsData.totalPages ||
-                                            requisitionsData.totalPages === 0
+                                            usersData.currentPage ===
+                                                usersData.totalPages ||
+                                            usersData.totalPages === 0
                                         }
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage + 1
+                                                usersData.currentPage + 1
                                             )
                                         }
                                     >
@@ -431,7 +444,7 @@ export default function RequisitionsPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            Failed to load requisitions. Please try again.
+                            Failed to load users. Please try again.
                         </div>
                     )}
                 </CardContent>

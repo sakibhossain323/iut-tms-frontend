@@ -1,9 +1,6 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,13 +19,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { RequisitionTable } from "@/components/requisitions/requisition-table";
-import { RequisitionTableSkeleton } from "@/components/requisitions/requisition-table-skeleton";
-import type { PaginatedRequisitions } from "@/lib/actions/requisition-actions";
-import { fetchRequisitionsAction } from "@/lib/actions/requisition-actions";
-import { Requisition, RequisitionStatus as Status } from "@/lib/definitions";
+import { Vehicle, VehicleStatus as Status } from "@/lib/definitions";
+import {
+    fetchVehiclesAction,
+    VehiclePagination,
+} from "@/lib/actions/vehicle-actions";
+import { VehicleTableSkeleton } from "@/components/vehicles/vehicle-table-skeleton";
+import { VehicleTable } from "@/components/vehicles/vehicle-table";
+import AddVehicleDialog from "@/components/vehicles/add-vehicle-dialog";
 
-export default function RequisitionsPage() {
+export default function VehiclesPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -42,7 +42,7 @@ export default function RequisitionsPage() {
         10
     );
     const initialSortBy =
-        (searchParams.get("sortBy") as keyof Requisition) || "createdAt";
+        (searchParams.get("sortBy") as keyof Vehicle) || "createdAt";
     const initialSortDir =
         (searchParams.get("sortDir") as "asc" | "desc") || "desc";
 
@@ -51,18 +51,19 @@ export default function RequisitionsPage() {
     const [statusFilter, setStatusFilter] = useState(initialStatus);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [itemsPerPage, setItemsPerPage] = useState(initialPerPage);
-    const [sortBy, setSortBy] = useState<keyof Requisition>(initialSortBy);
+    const [sortBy, setSortBy] = useState<keyof Vehicle>(initialSortBy);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
         initialSortDir
     );
 
-    // State for requisitions data
-    const [requisitionsData, setRequisitionsData] =
-        useState<PaginatedRequisitions | null>(null);
+    // State for vehicles data
+    const [vehiclesData, setVehiclesData] = useState<VehiclePagination | null>(
+        null
+    );
     const [isLoading, setIsLoading] = useState(true);
 
-    // Function to fetch requisitions
-    const fetchRequisitions = async () => {
+    // Function to fetch vehicles
+    const fetchVehicles = async () => {
         setIsLoading(true);
 
         try {
@@ -77,7 +78,7 @@ export default function RequisitionsPage() {
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
 
             // Call the server action directly instead of making an API request
-            const data = await fetchRequisitionsAction({
+            const data = await fetchVehiclesAction({
                 searchQuery,
                 statusFilter,
                 page: currentPage,
@@ -86,7 +87,7 @@ export default function RequisitionsPage() {
                 sortDirection,
             });
 
-            setRequisitionsData(data);
+            setVehiclesData(data);
         } catch (error) {
             console.error(error);
         } finally {
@@ -96,7 +97,7 @@ export default function RequisitionsPage() {
 
     // Fetch requisitions when filters or pagination change
     useEffect(() => {
-        fetchRequisitions();
+        fetchVehicles();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
@@ -126,7 +127,7 @@ export default function RequisitionsPage() {
         // Reset to first page when sort changes
         setCurrentPage(1);
         const [newSortBy, newSortDirection] = value.split("-") as [
-            keyof Requisition,
+            keyof Vehicle,
             "asc" | "desc"
         ];
         setSortBy(newSortBy);
@@ -147,7 +148,7 @@ export default function RequisitionsPage() {
 
     // Handle refresh button click
     const handleRefresh = () => {
-        fetchRequisitions();
+        fetchVehicles();
     };
 
     const handleReset = () => {
@@ -156,22 +157,20 @@ export default function RequisitionsPage() {
         setSortBy("createdAt");
         setSortDirection("desc");
         setCurrentPage(1);
-        setItemsPerPage(10);
+        setItemsPerPage(5);
     };
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight font-mono">
-                    Requisitions
+                    Vehicles
                 </h2>
                 <div className="flex items-center space-x-2">
                     <Button variant="outline" onClick={handleReset}>
                         Reset Filters
                     </Button>
-                    <Button asChild>
-                        <Link href={`${pathname}/new`}>New Requisition</Link>
-                    </Button>
+                    <AddVehicleDialog handleRefresh={handleRefresh} />
                 </div>
             </div>
 
@@ -179,15 +178,15 @@ export default function RequisitionsPage() {
                 <CardHeader>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div>
-                            <CardTitle>Requisition Management</CardTitle>
+                            <CardTitle>Vehicle Management</CardTitle>
                             <CardDescription className="mt-1">
-                                Manage vehicle requisition requests
+                                Manage available vehicles.
                             </CardDescription>
                         </div>
                         <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                             <div className="relative">
                                 <Input
-                                    placeholder="Search requisitions..."
+                                    placeholder="Search drivers..."
                                     value={searchQuery}
                                     onChange={handleSearchChange}
                                     className="w-full sm:w-[200px]"
@@ -204,17 +203,16 @@ export default function RequisitionsPage() {
                                     <SelectItem value="all">
                                         All Statuses
                                     </SelectItem>
-                                    <SelectItem value={Status.PENDING}>
-                                        Pending
+                                    <SelectItem value={Status.ACTIVE}>
+                                        Active
                                     </SelectItem>
-                                    <SelectItem value={Status.APPROVED}>
-                                        Approved
+                                    <SelectItem value={Status.INACTIVE}>
+                                        Inactive
                                     </SelectItem>
-                                    <SelectItem value={Status.REJECTED}>
-                                        Rejected
-                                    </SelectItem>
-                                    <SelectItem value={Status.COMPLETED}>
-                                        Completed
+                                    <SelectItem
+                                        value={Status.UNDER_MAINTENANCE}
+                                    >
+                                        Under Maintenance
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -231,6 +229,12 @@ export default function RequisitionsPage() {
                                     </SelectItem>
                                     <SelectItem value="createdAt-asc">
                                         Oldest First
+                                    </SelectItem>
+                                    <SelectItem value="capacity-asc">
+                                        Capacity (Low to High)
+                                    </SelectItem>
+                                    <SelectItem value="capacity-desc">
+                                        Capacity (High to Low)
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -265,11 +269,12 @@ export default function RequisitionsPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <RequisitionTableSkeleton />
-                    ) : requisitionsData ? (
+                        <VehicleTableSkeleton />
+                    ) : vehiclesData ? (
                         <>
-                            <RequisitionTable
-                                requisitions={requisitionsData.data}
+                            <VehicleTable
+                                vehicles={vehiclesData.data}
+                                handleRefresh={handleRefresh}
                             />
 
                             {/* Pagination controls */}
@@ -277,19 +282,18 @@ export default function RequisitionsPage() {
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm text-muted-foreground">
                                         Showing{" "}
-                                        {requisitionsData.totalItems > 0
-                                            ? (requisitionsData.currentPage -
-                                                  1) *
+                                        {vehiclesData.totalItems > 0
+                                            ? (vehiclesData.currentPage - 1) *
                                                   itemsPerPage +
                                               1
                                             : 0}{" "}
                                         to{" "}
                                         {Math.min(
-                                            requisitionsData.currentPage *
+                                            vehiclesData.currentPage *
                                                 itemsPerPage,
-                                            requisitionsData.totalItems
+                                            vehiclesData.totalItems
                                         )}{" "}
-                                        of {requisitionsData.totalItems} entries
+                                        of {vehiclesData.totalItems} entries
                                     </p>
                                 </div>
 
@@ -298,11 +302,11 @@ export default function RequisitionsPage() {
                                         variant="outline"
                                         size="icon"
                                         disabled={
-                                            requisitionsData.currentPage === 1
+                                            vehiclesData.currentPage === 1
                                         }
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage - 1
+                                                vehiclesData.currentPage - 1
                                             )
                                         }
                                     >
@@ -313,9 +317,9 @@ export default function RequisitionsPage() {
                                     <div className="flex items-center gap-1">
                                         {(() => {
                                             const totalPages =
-                                                requisitionsData.totalPages;
+                                                vehiclesData.totalPages;
                                             const currentPage =
-                                                requisitionsData.currentPage;
+                                                vehiclesData.currentPage;
 
                                             // Always show first page
                                             const pages = [1];
@@ -414,13 +418,13 @@ export default function RequisitionsPage() {
                                         variant="outline"
                                         size="icon"
                                         disabled={
-                                            requisitionsData.currentPage ===
-                                                requisitionsData.totalPages ||
-                                            requisitionsData.totalPages === 0
+                                            vehiclesData.currentPage ===
+                                                vehiclesData.totalPages ||
+                                            vehiclesData.totalPages === 0
                                         }
                                         onClick={() =>
                                             handlePageChange(
-                                                requisitionsData.currentPage + 1
+                                                vehiclesData.currentPage + 1
                                             )
                                         }
                                     >
@@ -431,7 +435,7 @@ export default function RequisitionsPage() {
                         </>
                     ) : (
                         <div className="py-8 text-center">
-                            Failed to load requisitions. Please try again.
+                            Failed to load vehicles. Please try again.
                         </div>
                     )}
                 </CardContent>
