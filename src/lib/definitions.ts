@@ -61,6 +61,7 @@ export interface User {
     email: string;
     designation: string;
     contactNumber: string;
+    department: string;
     role: Role;
     createdAt: string;
 }
