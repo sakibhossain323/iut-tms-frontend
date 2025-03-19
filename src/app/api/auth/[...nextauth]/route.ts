@@ -2,7 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const attemptLogin = async (requestBody: any) => {
-    const res = await fetch(process.env.BACKEND_BASE_URL + "/auth/login", {
+    const res = await fetch(process.env.BACKEND_BASE_URL + "/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -30,9 +30,7 @@ export const authOptions: NextAuthOptions = {
                     if (res.ok && data?.user && data?.token) {
                         const user = data?.user;
                         return {
-                            id: user?.id,
-                            email: user?.email,
-                            name: user?.username,
+                            ...user,
                             token: data?.token,
                         };
                     }
@@ -59,12 +57,15 @@ export const authOptions: NextAuthOptions = {
                 token.email = user.email;
                 token.name = user.name;
                 token.accessToken = user.token;
+                token.role = user.role;
             }
             return token;
         },
         async session({ session, token }) {
             if (token) {
                 session.accessToken = token.accessToken;
+                session.role = token?.role;
+                session.id = token.sub;
             }
             return session;
         },
